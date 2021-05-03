@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <item android:drawable="@drawable/back_pressed" android:state_pressed="true" />
+    <item android:drawable="@drawable/back_enabled" android:state_enabled="true" tools:ignore="StateListReachable" />
+    <item android:drawable="@drawable/back_disabled" android:state_enabled="false" />
+
+</selector>
