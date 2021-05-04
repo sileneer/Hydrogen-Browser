@@ -1,8 +1,10 @@
 # Hydrogen-Browser
 
-The release notes are also available in [简体中文]()
+The release notes are also available in [简体中文](https://github.com/lzh7522/Hydrogen-Browser/blob/master/README_zh-cn.md)
 
-## version 0.2.0_alpha
+## Release Notes
+
+### version 0.2.0_alpha
 Release time: 
 1. New: Settings
 2. Fix: User will exit the browser when keeping going back from the first page
