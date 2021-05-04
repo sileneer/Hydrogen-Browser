@@ -7,7 +7,7 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 ### v0.2.0_alpha
 Release time: 
 1. New: Settings
-2. Optimise: Refactor the webview
+2. Optimise: Refactor the WebView
 3. Fix: User will exit the browser when keeping going back from the first page
 4. Known issue: When loading some website, like baidu baijiahao, the site cannot be successfully loaded
 
