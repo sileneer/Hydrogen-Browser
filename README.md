@@ -1,4 +1,4 @@
-# Hydrogen-Browser
+# Hydrogen Browser
 
 The release notes are also available in [Simplified Chinese](https://github.com/lzh7522/Hydrogen-Browser/blob/master/README_zh-cn.md)
 
