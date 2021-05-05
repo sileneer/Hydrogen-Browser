@@ -11,7 +11,7 @@ import static java.lang.Thread.sleep;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DISPLAY_LENGTH = 300;
+    private static final int SPLASH_DISPLAY_LENGTH = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

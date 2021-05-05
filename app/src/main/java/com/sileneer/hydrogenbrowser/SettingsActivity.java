@@ -7,11 +7,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private ImageView back;
+    private ListView listView;
+
+    private String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,27 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(SettingsActivity.this, android.R.layout.simple_list_item_1, menus);
+        listView = findViewById(R.id.list_view);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch(position){
+                    case 1:
+                        HomepageActivity.actionStart(SettingsActivity.this);
+                        break;
+                    case 3:
+                        AboutActivity.actionStart(SettingsActivity.this);
+                        break;
+                    case 4:
+
+                }
             }
         });
     }
