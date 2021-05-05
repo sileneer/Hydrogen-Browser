@@ -43,7 +43,9 @@ public class HomepageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String input = url.getText().toString();
-                MainActivity.homepageUrl = input;
+                MainActivity.editor_homepage.putString("homepage", input);
+                MainActivity.editor_homepage.commit();
+                MainActivity.homepageUrl = MainActivity.sharedPref_homepage.getString("homepage", "www.google.com");
                 Toast.makeText(HomepageActivity.this,"Homepage edited successfully", Toast.LENGTH_LONG).show();
                 MainActivity.hideKeyboard(HomepageActivity.this);
             }
