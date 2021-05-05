@@ -5,7 +5,7 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 ## Release Notes
 
 ### v0.2.0_alpha
-Release time: 
+Release date: 
 1. New: Settings
 2. New: Homepage Settings
 3. Optimise: Refactor the WebView
@@ -13,7 +13,7 @@ Release time:
 5. Known issue: When loading some website, like baidu baijiahao, the site cannot be successfully loaded
 
 ### v0.1.0_alpha
-Release time: 3 May 2021
+Release date: 3 May 2021
 1. New: Basic function of web browsing
 2. New: Address bar search
 3. New: Popup menus
