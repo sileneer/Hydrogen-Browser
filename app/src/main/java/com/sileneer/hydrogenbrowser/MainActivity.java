@@ -7,11 +7,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,24 +19,21 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
-import android.widget.Toast;
-
-import java.util.Stack;
-
-import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
-    protected static AutoCompleteTextView url;
+    protected static AutoCompleteTextView addressBarUrl;
     protected static WebView webView;
     private ImageView back;
     private ImageView forward;
     private ImageView refresh;
     private ImageView home;
     private ImageView menuImage;
-    protected String input;
-    protected String strUrl;
+    protected String inputFromAddressBar;
+    protected String urlFromInput;
+    protected String currentUrl;
     protected static String homepageUrl;
+
 
     MyWebViewClient webViewClient = new MyWebViewClient();
 
@@ -62,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         webView = findViewById(R.id.show);
-        url = findViewById(R.id.url);
+        addressBarUrl = findViewById(R.id.url);
         back = findViewById(R.id.back);
         forward = findViewById(R.id.forward);
         refresh = findViewById(R.id.refresh);
@@ -83,30 +77,29 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
-        url.setAdapter(adapter);
-        url.setOnKeyListener(new View.OnKeyListener() {
+        addressBarUrl.setAdapter(adapter);
+        addressBarUrl.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     hideKeyboard(MainActivity.this);
-                    input = url.getText().toString();
-                    if (!(input.startsWith("http://") || input.startsWith("https://"))) {
-                        strUrl = "http://" + input;
+                    inputFromAddressBar = addressBarUrl.getText().toString();
+                    if (!(inputFromAddressBar.startsWith("http://") || inputFromAddressBar.startsWith("https://"))) {
+                        urlFromInput = "http://" + inputFromAddressBar;
                     }
                     boolean isSearched = true;
                     String[] suffix = {".com", ".net", ".sg", ".cn"};
                     for (String s : suffix) {
-                        if (input.contains(s)) {
+                        if (inputFromAddressBar.contains(s)) {
                             isSearched = false;
                             break;
                         }
                     }
                     if (isSearched) {
-                        strUrl = "http://www.google.com/search?q=" + input;
-                        webView.loadUrl(strUrl);
+                        urlFromInput = "http://www.google.com/search?q=" + inputFromAddressBar;
                     }
-                    webView.loadUrl(strUrl);
-                    url.clearFocus();
+                    webView.loadUrl(urlFromInput);
+                    addressBarUrl.clearFocus();
                     return true;
                 }
                 return false;
@@ -147,8 +140,15 @@ public class MainActivity extends AppCompatActivity {
 
     class MyWebViewClient extends WebViewClient {
         @Override
-        public void onPageFinished(WebView view, String url) {
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
             changeStatueOfWebToolsButton();
+            currentUrl = webView.getUrl();
+            addressBarUrl.setText(currentUrl);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+
         }
     }
 
