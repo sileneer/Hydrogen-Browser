@@ -19,7 +19,8 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageView back;
     private ListView listView;
 
-    private String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
+    private final String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
+    private final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        
+
         back = findViewById(R.id.title_back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,7 +48,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch(position){
+                switch (position) {
+                    case 0:
+                        showSearchEngines();
+                        break;
                     case 1:
                         HomepageActivity.actionStart(SettingsActivity.this);
                         break;
@@ -62,7 +66,36 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void showOpenSource(){
+    private void showSearchEngines() {
+        AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
+        ad.setTitle("Please select your search engine:");
+
+        ad.setSingleChoiceItems(searchEngines, MainActivity.searchEnginesIndex, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MainActivity.editor_searchEngines.putInt("search engines", which);
+                MainActivity.editor_searchEngines.commit();
+            }
+        });
+        ad.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                MainActivity.searchEnginesIndex = MainActivity.sharedPref_searchEngines.getInt("search engines", 0);
+            }
+        });
+
+        ad.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        ad.show();
+    }
+
+    private void showOpenSource() {
         AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
         ad.setTitle("Open Source");
         ad.setMessage("You will be redirected github.com. Are you sure to continue?");
@@ -81,7 +114,7 @@ public class SettingsActivity extends AppCompatActivity {
         ad.show();
     }
 
-    protected static void actionStart (Context context){
+    protected static void actionStart(Context context) {
         Intent intent = new Intent(context, SettingsActivity.class);
         context.startActivity(intent);
     }

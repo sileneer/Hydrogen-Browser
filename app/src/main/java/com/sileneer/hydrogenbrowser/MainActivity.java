@@ -8,6 +8,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -33,7 +34,14 @@ public class MainActivity extends AppCompatActivity {
     protected String inputFromAddressBar;
     protected String urlFromInput;
     protected String currentUrl;
-    protected static String homepageUrl = "http://www.google.com";
+
+    protected static int searchEnginesIndex;
+    protected static SharedPreferences sharedPref_searchEngines;
+    protected static SharedPreferences.Editor editor_searchEngines;
+
+    protected static String homepageUrl;
+    protected static SharedPreferences sharedPref_homepage;
+    protected static SharedPreferences.Editor editor_homepage;
 
     MyWebViewClient webViewClient = new MyWebViewClient();
 
@@ -45,6 +53,13 @@ public class MainActivity extends AppCompatActivity {
             "www.zhihu.com", "zhihu.com"
     };
 
+    private static final String[] searchPrefix = new String[]{
+            "http://www.google.com/search?q=",
+            "http://www.baidu.com/s?wd=",
+            "https://www.bing.com/search?q=",
+            "https://duckduckgo.com/?q="
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +69,16 @@ public class MainActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
+
+        sharedPref_searchEngines = MainActivity.this.getSharedPreferences(
+                "search engines", Context.MODE_PRIVATE);
+        editor_searchEngines = sharedPref_searchEngines.edit();
+        searchEnginesIndex = sharedPref_searchEngines.getInt("search engines", 0);
+
+        sharedPref_homepage = MainActivity.this.getSharedPreferences(
+                "homepage", Context.MODE_PRIVATE);
+        editor_homepage = sharedPref_homepage.edit();
+        homepageUrl = sharedPref_homepage.getString("homepage", "www.google.com");
 
         webView = findViewById(R.id.show);
         addressBar = findViewById(R.id.url);
@@ -95,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if (isSearched) {
-                        urlFromInput = "http://www.google.com/search?q=" + inputFromAddressBar;
+                        urlFromInput = searchPrefix[searchEnginesIndex] + inputFromAddressBar;
                     }
                     webView.loadUrl(urlFromInput);
                     addressBar.clearFocus();
@@ -238,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    protected static void actionStart (Context context){
+    protected static void actionStart(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
         context.startActivity(intent);
     }
