@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -22,7 +23,7 @@ import android.widget.PopupMenu;
 
 public class MainActivity extends AppCompatActivity {
 
-    protected static AutoCompleteTextView addressBarUrl;
+    protected static AutoCompleteTextView addressBar;
     protected static WebView webView;
     private ImageView back;
     private ImageView forward;
@@ -32,8 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected String inputFromAddressBar;
     protected String urlFromInput;
     protected String currentUrl;
-    protected static String homepageUrl;
-
+    protected static String homepageUrl = "http://www.google.com";
 
     MyWebViewClient webViewClient = new MyWebViewClient();
 
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         webView = findViewById(R.id.show);
-        addressBarUrl = findViewById(R.id.url);
+        addressBar = findViewById(R.id.url);
         back = findViewById(R.id.back);
         forward = findViewById(R.id.forward);
         refresh = findViewById(R.id.refresh);
@@ -72,18 +72,17 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(webViewClient);
         webView.getSettings().setJavaScriptEnabled(true);
-        homepageUrl = "https://www.google.com";
         webView.loadUrl(homepageUrl);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
-        addressBarUrl.setAdapter(adapter);
-        addressBarUrl.setOnKeyListener(new View.OnKeyListener() {
+        addressBar.setAdapter(adapter);
+        addressBar.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
                     hideKeyboard(MainActivity.this);
-                    inputFromAddressBar = addressBarUrl.getText().toString();
+                    inputFromAddressBar = addressBar.getText().toString();
                     if (!(inputFromAddressBar.startsWith("http://") || inputFromAddressBar.startsWith("https://"))) {
                         urlFromInput = "http://" + inputFromAddressBar;
                     }
@@ -99,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                         urlFromInput = "http://www.google.com/search?q=" + inputFromAddressBar;
                     }
                     webView.loadUrl(urlFromInput);
-                    addressBarUrl.clearFocus();
+                    addressBar.clearFocus();
                     return true;
                 }
                 return false;
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             changeStatueOfWebToolsButton();
             currentUrl = webView.getUrl();
-            addressBarUrl.setText(currentUrl);
+            addressBar.setText(currentUrl);
         }
 
         @Override
@@ -195,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ConfirmExit() {//退出确认
-
         AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
         ad.setTitle("Warning");
         ad.setMessage("Are you sure to exit?");
@@ -238,6 +236,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    protected static void actionStart (Context context){
+        Intent intent = new Intent(context, MainActivity.class);
+        context.startActivity(intent);
+    }
+
+    protected static void loadOpenSource() {
+        webView.loadUrl("https://github.com/lzh7522/Hydrogen-Browser");
     }
 
     @Override

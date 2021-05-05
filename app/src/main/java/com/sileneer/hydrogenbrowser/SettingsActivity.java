@@ -3,7 +3,9 @@ package com.sileneer.hydrogenbrowser;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -53,10 +55,30 @@ public class SettingsActivity extends AppCompatActivity {
                         AboutActivity.actionStart(SettingsActivity.this);
                         break;
                     case 4:
-
+                        showOpenSource();
+                        break;
                 }
             }
         });
+    }
+
+    private void showOpenSource(){
+        AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
+        ad.setTitle("Open Source");
+        ad.setMessage("You will be redirected github.com. Are you sure to continue?");
+        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                MainActivity.actionStart(SettingsActivity.this);
+                MainActivity.loadOpenSource();
+            }
+        });
+        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+            }
+        });
+        ad.show();
     }
 
     protected static void actionStart (Context context){
