@@ -4,7 +4,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -37,14 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView menuImage;
     protected String input;
     protected String strUrl;
-    protected String forwardUrl;
+    protected static String homepageUrl;
 
-    protected AutoCompleteTextView getUrl() {
-        return url;
-    }
-
-    protected boolean isForward = false; // whether can forward to last page
-    protected int isForwardCount = 0; // -1 means that we are loading the last page, 0 means that we are loading a new page
+    MyWebViewClient webViewClient = new MyWebViewClient();
 
     private static final String[] data = new String[]{
             "www.baidu.com", "baidu.com",
@@ -53,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
             "www.bilibili.com", "bilibili.com",
             "www.zhihu.com", "zhihu.com"
     };
-    MyWebViewClient webViewClient = new MyWebViewClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,9 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(webViewClient);
         webView.getSettings().setJavaScriptEnabled(true);
-        strUrl = "https://www.google.com";
-        webView.loadUrl(strUrl);
-
+        homepageUrl = "https://www.google.com";
+        webView.loadUrl(homepageUrl);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
@@ -120,34 +115,42 @@ public class MainActivity extends AppCompatActivity {
 
         back.setEnabled(false);
         forward.setEnabled(false);
+
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pageGoBack(webView, webViewClient);
+                pageGoBack();
             }
         });
+
         forward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pageGoForward(webView, webViewClient);
+                pageGoForward();
             }
         });
+
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                String strUrl = url.getText().toString();
-//                webView.loadUrl(strUrl);
-                webView.loadUrl(webViewClient.getCurrentUrl());
+                webView.loadUrl(webView.getUrl());
             }
         });
+
         home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                webView.loadUrl("http://www.baidu.com");
+                webView.loadUrl(homepageUrl);
             }
         });
     }
 
+    class MyWebViewClient extends WebViewClient {
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            changeStatueOfWebToolsButton();
+        }
+    }
 
     protected void changeStatueOfWebToolsButton() {
 
@@ -157,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
             back.setEnabled(false);
         }
 
-        if (isForward) {
+        if (webView.canGoForward()) {
             forward.setEnabled(true);
         } else {
             forward.setEnabled(false);
@@ -165,21 +168,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public boolean pageGoBack(WebView web, MyWebViewClient client) {
-        final String url = client.popLastPageUrl();
-        if (url != null) {
-            web.loadUrl(url);
-            isForward = true;
-            isForwardCount = -1;
-            return true;
-        }
-        finish();
-        return false;
+    public boolean pageGoBack() {
+        webView.goBack();
+        return true;
     }
 
-    public boolean pageGoForward(WebView web, MyWebViewClient client) {
-        web.loadUrl(forwardUrl);
-        forwardUrl = null;
+    public boolean pageGoForward() {
+        webView.goForward();
         return true;
     }
 
@@ -187,14 +182,38 @@ public class MainActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the Back button and if there's history
         if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
-            return pageGoBack(webView, webViewClient);
+            pageGoBack();
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            System.out.println("***************");
+            ConfirmExit();//按了返回键，但已经不能返回，则执行退出确认
+            return true;
         }
         // If it wasn't the Back key or there's no web page history, bubble up to the default
         // system behavior (probably exit the activity)
         return super.onKeyDown(keyCode, event);
     }
 
-    private void hideKeyboard(Activity context) {
+    public void ConfirmExit() {//退出确认
+
+        AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+        ad.setTitle("Warning");
+        ad.setMessage("Are you sure to exit?");
+        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+                MainActivity.this.finish();
+            }
+        });
+        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int i) {
+            }
+        });
+        ad.show();
+    }
+
+    protected static void hideKeyboard(Activity context) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         // hide keyboard
         imm.hideSoftInputFromWindow(context.getWindow().getDecorView().getWindowToken(), 0);
@@ -211,109 +230,14 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.settings:
                         SettingsActivity.actionStart(MainActivity.this);
                         return true;
-                    case R.id.about:
-                        AboutActivity.actionStart(MainActivity.this);
-                        return true;
+//                    case R.id.about:
+//                        AboutActivity.actionStart(MainActivity.this);
+//                        return true;
                     default:
                         return false;
                 }
             }
         });
-    }
-
-    class MyWebViewClient extends WebViewClient {
-        private final Stack<String> mUrls = new Stack<>();
-        private boolean mIsLoading;
-        private String mUrlBeforeRedirect;
-        private String currentUrl;
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (isForwardCount == 0) {
-                isForward = false;
-            } else {
-                isForwardCount++;
-            }
-
-            changeStatueOfWebToolsButton();
-
-            if (mIsLoading && mUrls.size() > 0) {
-                mUrlBeforeRedirect = mUrls.pop();
-            }
-            recordUrl(url);
-            currentUrl = url;
-            this.mIsLoading = true;
-            MainActivity.url.setText(currentUrl);
-        }
-
-        public String getCurrentUrl() {
-            return currentUrl;
-        }
-
-        private void recordUrl(String url) {
-            if (!TextUtils.isEmpty(url) && !url.equalsIgnoreCase(getLastPageUrl())) {
-                mUrls.push(url);
-            } else if (!TextUtils.isEmpty(mUrlBeforeRedirect)) {
-                mUrls.push(mUrlBeforeRedirect);
-                mUrlBeforeRedirect = null;
-            }
-        }
-
-        private synchronized String getLastPageUrl() {
-            return mUrls.size() > 0 ? mUrls.peek() : null;
-        }
-
-        public String popLastPageUrl() {
-            forwardUrl = currentUrl;
-            if (mUrls.size() >= 2) {
-                mUrls.pop();
-                return mUrls.pop();
-            }
-            return null;
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-
-            if (this.mIsLoading) {
-                this.mIsLoading = false;
-            }
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String strUrl) {
-            if (strUrl == null) return false;
-
-            try {
-                if (strUrl.startsWith("weixin://") //微信
-                        || strUrl.startsWith("alipays://") //支付宝
-                        || strUrl.startsWith("mailto://") //邮件
-                        || strUrl.startsWith("tel://")//电话
-                        || strUrl.startsWith("dianping://")//大众点评
-                        || strUrl.startsWith("baiduboxapp://")
-                    //其他自定义的scheme
-                ) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(strUrl));
-                    startActivity(intent);
-                    return true;
-                }
-            } catch (Exception e) {
-                return true;
-            }
-
-            webView.loadUrl(strUrl);
-            return true;
-        }
-
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            if (errorCode == WebViewClient.ERROR_HOST_LOOKUP) {
-                strUrl = "http://www.google.com/search?q=" + input;
-                webView.loadUrl(strUrl);
-            }
-        }
     }
 
     @Override
