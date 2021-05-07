@@ -5,7 +5,7 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 ## Release Notes
 
 ### v0.2.0_alpha
-Release date: 
+Release date: 7 May 2021
 1. New: Settings
 2. New: Switch search engine
 3. New: Homepage settings
@@ -13,7 +13,7 @@ Release date:
 5. Optimise: Refactor the WebView
 6. Fix: User will exit the browser when keeping going back from the first page
 7. Known issue: When loading some website, like baidu baijiahao, the site cannot be successfully loaded
-8. Known issue: Setting > Advanced is unclickable
+8. Known issue: Settings > Advanced is unclickable
 
 ### v0.1.0_alpha
 Release date: 3 May 2021
