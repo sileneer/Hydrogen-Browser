@@ -5,13 +5,13 @@
     "kind": "Directory"
   },
   "applicationId": "com.sileneer.hydrogenbrowser",
-  "variantName": "processReleaseResources",
+  "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 3,
-      "versionName": "0.1.0_alpha",
+      "versionCode": 4,
+      "versionName": "0.2.0_alpha",
       "outputFile": "app-release.apk"
     }
   ]
