@@ -7,18 +7,18 @@
         android:id="@+id/ll_address_bar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:paddingHorizontal="10dp">
+        android:paddingVertical="5dp"
+        android:paddingHorizontal="20dp">
 
         <AutoCompleteTextView
             android:id="@+id/url"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginVertical="5dp"
             android:layout_weight="1"
             android:background="@drawable/address_bar"
             android:completionHint="@string/url"
             android:completionThreshold="1"
-            android:drawableLeft="@drawable/search"
+            android:drawableLeft="@drawable/ic_search"
             android:drawablePadding="10dp"
             android:hint="@string/url"
             android:inputType="textUri"
@@ -30,11 +30,7 @@
             android:id="@+id/menu"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:layout_marginVertical="10dp"
             android:layout_marginLeft="10dp"
-
-            android:scaleType="fitCenter"
             android:src="@drawable/icon_menu" />
 
 
@@ -51,18 +47,18 @@
         android:id="@+id/btnLayout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="20dp">
 
         <ImageView
             android:id="@+id/back"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:scaleType="fitCenter"
             android:src="@drawable/icon_back" />
 
         <ImageView
