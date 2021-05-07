@@ -4,6 +4,12 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 
 ## Release Notes
 
+### v0.2.1_alpha
+Release date: 
+1. New: App icon
+2. Optimise: The action bar and tab icon
+3. Fix: The back icon is not enable when WebView can go back
+
 ### v0.2.0_alpha
 Release date: 7 May 2021
 1. New: Settings
