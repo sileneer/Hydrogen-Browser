@@ -111,7 +111,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int i) {
             }
         });
-        ad.show();
+        AlertDialog alert = ad.show();
     }
 
     protected static void actionStart(Context context) {

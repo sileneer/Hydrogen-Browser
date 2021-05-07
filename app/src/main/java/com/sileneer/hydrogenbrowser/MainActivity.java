@@ -172,7 +172,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-
+            changeStatueOfWebToolsButton();
+            currentUrl = webView.getUrl();
+            addressBar.setText(currentUrl);
         }
     }
 
@@ -210,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
             System.out.println("***************");
-            ConfirmExit();//按了返回键，但已经不能返回，则执行退出确认
+            ConfirmExit();
             return true;
         }
         // If it wasn't the Back key or there's no web page history, bubble up to the default
@@ -218,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    public void ConfirmExit() {//退出确认
+    public void ConfirmExit() {
         AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
         ad.setTitle("Warning");
         ad.setMessage("Are you sure to exit?");
@@ -253,9 +255,6 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.settings:
                         SettingsActivity.actionStart(MainActivity.this);
                         return true;
-//                    case R.id.about:
-//                        AboutActivity.actionStart(MainActivity.this);
-//                        return true;
                     default:
                         return false;
                 }
