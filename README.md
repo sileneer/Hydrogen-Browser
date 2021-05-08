@@ -5,7 +5,7 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 ## Release Notes
 
 ### v0.2.2_alpha
-Release date: 
+Release date: 9 May 2021
 1. New: Progress bar when loading
 2. Optimise: Immersive status bar
 3. Optimise: No action bar for every activity
