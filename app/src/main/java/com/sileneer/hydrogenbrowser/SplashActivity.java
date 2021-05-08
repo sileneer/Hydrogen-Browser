@@ -9,7 +9,7 @@ import android.os.Handler;
 
 import static java.lang.Thread.sleep;
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private static final int SPLASH_DISPLAY_LENGTH = 500;
 
@@ -17,11 +17,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
 
 
 //        new Thread(new Runnable() {

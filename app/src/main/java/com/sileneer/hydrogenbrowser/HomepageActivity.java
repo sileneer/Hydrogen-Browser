@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class HomepageActivity extends AppCompatActivity {
+public class HomepageActivity extends BaseActivity {
 
     private ImageView back;
     private Button confirm;
@@ -22,11 +22,6 @@ public class HomepageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
 
         back = findViewById(R.id.title_back);
         confirm = findViewById(R.id.confirm);

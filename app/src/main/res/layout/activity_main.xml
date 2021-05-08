@@ -7,8 +7,8 @@
         android:id="@+id/ll_address_bar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:paddingVertical="5dp"
-        android:paddingHorizontal="20dp">
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="5dp">
 
         <AutoCompleteTextView
             android:id="@+id/url"
@@ -24,7 +24,7 @@
             android:inputType="textUri"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:selectAllOnFocus="true"/>
+            android:selectAllOnFocus="true" />
 
         <ImageView
             android:id="@+id/menu"
@@ -51,8 +51,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:paddingVertical="10dp"
-        android:paddingHorizontal="20dp">
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp">
 
         <ImageView
             android:id="@+id/back"
