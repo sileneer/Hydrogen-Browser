@@ -9,6 +9,7 @@ Release date:
 1. Optimise: Immersive status bar
 2. Optimise: No action bar for every activity
 3. Optimise: The animation when opening the MainActivity
+4. Fix: Incorrect display of about page 
 4. Known issue: Incorrect display in dark mode
 
 ### v0.2.1_alpha
