@@ -19,7 +19,7 @@ Release date: 7 May 2021
 5. Optimise: Refactor the WebView
 6. Fix: User will exit the browser when keeping going back from the first page
 7. Known issue: When loading some website, like baidu baijiahao, the site cannot be successfully loaded
-8. Known issue: Settings > Advanced is unclickable
+8. Known issue: Settings > Advanced is not clickable
 9. Known issue: When the search engine has changed, display in search bar is not correct
 
 ### v0.1.0_alpha
