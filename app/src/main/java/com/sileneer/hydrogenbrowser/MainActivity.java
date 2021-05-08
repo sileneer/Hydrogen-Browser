@@ -15,12 +15,15 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+
+import me.jingbin.progress.WebProgress;
 
 public class MainActivity extends BaseActivity {
 
@@ -35,6 +38,8 @@ public class MainActivity extends BaseActivity {
     protected String urlFromInput;
     protected String currentUrl;
 
+    private WebProgress progressBar;
+
     protected static int searchEnginesIndex;
     protected static SharedPreferences sharedPref_searchEngines;
     protected static SharedPreferences.Editor editor_searchEngines;
@@ -44,6 +49,7 @@ public class MainActivity extends BaseActivity {
     protected static SharedPreferences.Editor editor_homepage;
 
     MyWebViewClient webViewClient = new MyWebViewClient();
+    MyWebChromeClient webChromeClient = new MyWebChromeClient();
 
     private static final String[] data = new String[]{
             "www.baidu.com", "baidu.com",
@@ -60,15 +66,12 @@ public class MainActivity extends BaseActivity {
             "https://duckduckgo.com/?q="
     };
 
+    protected static final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-//        ActionBar actionBar = getSupportActionBar();
-//        if (actionBar != null) {
-//            actionBar.hide();
-//        }
 
         sharedPref_searchEngines = MainActivity.this.getSharedPreferences(
                 "search engines", Context.MODE_PRIVATE);
@@ -87,6 +90,7 @@ public class MainActivity extends BaseActivity {
         refresh = findViewById(R.id.refresh);
         home = findViewById(R.id.home);
         menuImage = findViewById(R.id.menu);
+        progressBar = findViewById(R.id.progress_bar);
 
         menuImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,9 +100,11 @@ public class MainActivity extends BaseActivity {
         });
 
         webView.setWebViewClient(webViewClient);
+        webView.setWebChromeClient(webChromeClient);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl(homepageUrl);
 
+        changeAddressBarHint(searchEnginesIndex);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
         addressBar.setAdapter(adapter);
@@ -168,6 +174,7 @@ public class MainActivity extends BaseActivity {
             changeStatueOfWebToolsButton();
             currentUrl = webView.getUrl();
             addressBar.setText(currentUrl);
+            progressBar.show();
         }
 
         @Override
@@ -175,6 +182,16 @@ public class MainActivity extends BaseActivity {
             changeStatueOfWebToolsButton();
             currentUrl = webView.getUrl();
             addressBar.setText(currentUrl);
+            progressBar.hide();
+            super.onPageFinished(view, url);
+        }
+    }
+
+    class MyWebChromeClient extends WebChromeClient {
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            super.onProgressChanged(view, newProgress);
+            progressBar.setWebProgress(newProgress);
         }
     }
 
@@ -211,7 +228,6 @@ public class MainActivity extends BaseActivity {
             pageGoBack();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
-            System.out.println("***************");
             ConfirmExit();
             return true;
         }
@@ -265,6 +281,12 @@ public class MainActivity extends BaseActivity {
     protected static void actionStart(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
         context.startActivity(intent);
+    }
+
+    protected static void changeAddressBarHint(int searchEnginesIndex){
+        String searchEngine = searchEngines[searchEnginesIndex];
+        String addressBarHint = "Search by "+searchEngine+" or input URL here";
+        addressBar.setHint(addressBarHint);
     }
 
     protected static void loadOpenSource() {

@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Hydrogen Browser</string>
-    <string name="url">Search by Google or input URL here</string>
     <string name="hydrogen_browser">Hydrogen Browser</string>
     <string name="copyright">Copyright © 2020–2021 Sileneer. All Rights Reserved.</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="homepage">Homepage</string>
+    <string name="input_new_homepage_url_below">Input new homepage url below:</string>
 </resources>
