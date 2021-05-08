@@ -10,9 +10,10 @@ Release date: 9 May 2021
 2. Optimise: Immersive status bar
 3. Optimise: No action bar for every activity
 4. Optimise: The animation when opening the MainActivity
-5. Fix: Incorrect display of about page 
-6. Fix: Incorrect display of hint in the address bar
-7. Known issue: Incorrect display in dark mode
+5. Optimise: Some minor UI change
+6. Fix: Incorrect display of about page 
+7. Fix: Incorrect display of hint in the address bar
+8. Known issue: Incorrect display in dark mode
 
 ### v0.2.1_alpha
 Release date: 7 May 2021
