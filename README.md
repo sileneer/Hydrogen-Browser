@@ -16,6 +16,7 @@ Release date: 7 May 2021
 1. New: App icon
 2. Optimise: The action bar and tab icon
 3. Fix: The back icon is not enable when WebView can go back
+4. Known issue: Version Name is not updated
 
 ### v0.2.0_alpha
 Release date: 7 May 2021
