@@ -20,7 +20,6 @@ public class SettingsActivity extends BaseActivity {
     private ListView listView;
 
     private final String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
-    private final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +65,7 @@ public class SettingsActivity extends BaseActivity {
         AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
         ad.setTitle("Please select your search engine:");
 
-        ad.setSingleChoiceItems(searchEngines, MainActivity.searchEnginesIndex, new DialogInterface.OnClickListener() {
+        ad.setSingleChoiceItems(MainActivity.searchEngines, MainActivity.searchEnginesIndex, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -78,6 +77,7 @@ public class SettingsActivity extends BaseActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 MainActivity.searchEnginesIndex = MainActivity.sharedPref_searchEngines.getInt("search engines", 0);
+                MainActivity.changeAddressBarHint(MainActivity.searchEnginesIndex);
             }
         });
 
