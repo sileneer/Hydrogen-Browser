@@ -16,6 +16,18 @@ def getVersionCode() {// 获取版本号
     }
 }
 
+def getVersionName() {
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionFile))
+        def versionName = versionProps['VERSION_NAME']
+        return versionName
+    } else {
+        throw new GradleException("Could not find version.properties!")
+    }
+}
+
 plugins {
     id 'com.android.application'
 }
@@ -25,13 +37,14 @@ android {
     buildToolsVersion "30.0.3"
 
     def currentVersionCode = getVersionCode()
+    def currentVersionName = getVersionName()
 
     defaultConfig {
         applicationId "com.sileneer.hydrogenbrowser"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode currentVersionCode
-        versionName '0.2.0_alpha'
+        versionName currentVersionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -50,11 +63,10 @@ android {
 
 dependencies {
 
-    // 基础依赖包，必须要依赖
     implementation 'com.gyf.immersionbar:immersionbar:3.0.0'
-// fragment快速实现（可选）
+
     implementation 'com.gyf.immersionbar:immersionbar-components:3.0.0'
-// kotlin扩展（可选）
+
     implementation 'com.gyf.immersionbar:immersionbar-ktx:3.0.0'
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
