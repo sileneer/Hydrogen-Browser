@@ -4,6 +4,12 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 
 ## Release Notes
 
+### v0.2.2_alpha
+Release date: 
+1. Optimise: Immersive status bar
+2. Optimise: No action bar for every activity
+3. Optimise: The animation when opening the MainActivity
+
 ### v0.2.1_alpha
 Release date: 7 May 2021
 1. New: App icon
