@@ -285,7 +285,7 @@ public class MainActivity extends BaseActivity {
 
     protected static void changeAddressBarHint(int searchEnginesIndex){
         String searchEngine = searchEngines[searchEnginesIndex];
-        String addressBarHint = "Search by "+searchEngine+" or input URL here";
+        String addressBarHint = "Search by "+searchEngine+" or input URL";
         addressBar.setHint(addressBarHint);
     }
 
