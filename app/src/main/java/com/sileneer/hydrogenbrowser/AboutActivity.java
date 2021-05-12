@@ -13,7 +13,6 @@ import java.util.Properties;
 
 public class AboutActivity extends BaseActivity {
 
-    private ImageView back;
     private TextView version;
 
     @Override
@@ -21,14 +20,7 @@ public class AboutActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-
-        back = findViewById(R.id.title_back);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        TitleLayout.setTitleText("About");
 
         version = findViewById(R.id.app_version);
         version.setText("Version: "+BuildConfig.VERSION_NAME);

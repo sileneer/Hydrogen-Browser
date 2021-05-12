@@ -11,7 +11,7 @@
         android:layout_height="50dp"
         android:paddingHorizontal="20dp"
         android:paddingVertical="5dp"
-        app:layout_constraintBottom_toTopOf="@id/progress_bar"
+        app:layout_constraintBottom_toTopOf="@id/webview"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints">
 
@@ -22,7 +22,7 @@
             android:layout_weight="1"
             android:background="@drawable/address_bar"
             android:completionThreshold="1"
-            android:drawableLeft="@drawable/ic_search"
+            android:drawableStart="@drawable/ic_search"
             android:drawablePadding="10dp"
             android:hint=""
             android:inputType="textUri"
@@ -34,7 +34,7 @@
             android:id="@+id/menu"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:src="@drawable/icon_menu" />
 
     </LinearLayout>
@@ -43,11 +43,11 @@
         android:id="@+id/ll_progress_bar"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        app:layout_constraintBottom_toTopOf="@id/show"
+        app:layout_constraintBottom_toTopOf="@id/webview"
         app:layout_constraintTop_toBottomOf="@id/ll_address_bar"
         tools:ignore="MissingConstraints">
 
-        <me.jingbin.progress.WebProgress xmlns:android="http://schemas.android.com/apk/res/android"
+        <me.jingbin.progress.WebProgress
             android:id="@+id/progress_bar"
             android:layout_width="match_parent"
             android:layout_height="2dp"
@@ -57,7 +57,7 @@
     </LinearLayout>
 
     <WebView
-        android:id="@+id/show"
+        android:id="@+id/webview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/ll_botton"

@@ -7,9 +7,11 @@
     android:paddingBottom="20dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <include
+    <com.sileneer.hydrogenbrowser.TitleLayout
         android:id="@+id/title"
-        layout="@layout/title_about" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="MissingConstraints" />
 
     <LinearLayout
         android:layout_width="wrap_content"

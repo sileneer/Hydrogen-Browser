@@ -12,6 +12,8 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ActivityCollector.addActivity(this);
+
         ImmersionBar.with(this).statusBarDarkFont(true);
         ImmersionBar.with(this).autoDarkModeEnable(true);
         ImmersionBar.with(this).transparentBar().fullScreen(false);
@@ -22,5 +24,11 @@ public class BaseActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityCollector.removeActivity(this);
     }
 }
