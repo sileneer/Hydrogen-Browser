@@ -8,12 +8,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 
 public class SettingsActivity extends BaseActivity {
 
-    private ImageView back;
     private ListView listView;
 
     private final String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
@@ -23,14 +21,7 @@ public class SettingsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-
-        back = findViewById(R.id.title_back);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        TitleLayout.setTitleText("Settings");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(SettingsActivity.this, android.R.layout.simple_list_item_1, menus);
         listView = findViewById(R.id.list_view);

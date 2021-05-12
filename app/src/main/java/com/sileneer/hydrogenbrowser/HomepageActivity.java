@@ -6,12 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 public class HomepageActivity extends BaseActivity {
 
-    private ImageView back;
     private Button confirm;
     private EditText url;
 
@@ -20,16 +18,10 @@ public class HomepageActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
-        back = findViewById(R.id.title_back);
+        TitleLayout.setTitleText("Homepage");
+
         confirm = findViewById(R.id.confirm);
         url = findViewById(R.id.home_page_url);
-
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override

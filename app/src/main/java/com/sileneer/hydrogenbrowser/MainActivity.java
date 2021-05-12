@@ -80,7 +80,7 @@ public class MainActivity extends BaseActivity {
         editor_homepage = sharedPref_homepage.edit();
         homepageUrl = sharedPref_homepage.getString("homepage", "www.google.com");
 
-        webView = findViewById(R.id.show);
+        webView = findViewById(R.id.webview);
         addressBar = findViewById(R.id.url);
         back = findViewById(R.id.back);
         forward = findViewById(R.id.forward);
@@ -238,7 +238,7 @@ public class MainActivity extends BaseActivity {
         ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int i) {
-                MainActivity.this.finish();
+                ActivityCollector.finishAll();
             }
         });
         ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -285,12 +285,6 @@ public class MainActivity extends BaseActivity {
     }
 
     protected static void loadOpenSource() {
-        webView.loadUrl("https://github.com/lzh7522/Hydrogen-Browser");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        System.exit(0);
+        webView.loadUrl("https://github.com/sileneer/Hydrogen-Browser");
     }
 }
