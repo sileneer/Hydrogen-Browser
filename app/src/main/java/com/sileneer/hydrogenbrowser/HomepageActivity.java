@@ -1,8 +1,5 @@
 package com.sileneer.hydrogenbrowser;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -41,13 +38,13 @@ public class HomepageActivity extends BaseActivity {
                 MainActivity.editor_homepage.putString("homepage", input);
                 MainActivity.editor_homepage.commit();
                 MainActivity.homepageUrl = MainActivity.sharedPref_homepage.getString("homepage", "www.google.com");
-                Toast.makeText(HomepageActivity.this,"Homepage edited successfully", Toast.LENGTH_LONG).show();
+                Toast.makeText(HomepageActivity.this, "Homepage edited successfully", Toast.LENGTH_LONG).show();
                 MainActivity.hideKeyboard(HomepageActivity.this);
             }
         });
     }
 
-    protected static void actionStart (Context context){
+    protected static void actionStart(Context context) {
         Intent intent = new Intent(context, HomepageActivity.class);
         context.startActivity(intent);
     }
