@@ -180,8 +180,6 @@ public class MainActivity extends BaseActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             changeStatueOfWebToolsButton();
-            currentUrl = webView.getUrl();
-            addressBar.setText(currentUrl);
             progressBar.hide();
             super.onPageFinished(view, url);
         }
