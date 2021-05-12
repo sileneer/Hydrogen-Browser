@@ -19,7 +19,6 @@ public class SettingsActivity extends BaseActivity {
     private ImageView back;
     private ListView listView;
 
-
     private final String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
 
     @Override
