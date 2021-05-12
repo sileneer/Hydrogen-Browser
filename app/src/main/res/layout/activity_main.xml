@@ -21,10 +21,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/address_bar"
-            android:hint=""
             android:completionThreshold="1"
             android:drawableLeft="@drawable/ic_search"
             android:drawablePadding="10dp"
+            android:hint=""
             android:inputType="textUri"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
@@ -39,14 +39,22 @@
 
     </LinearLayout>
 
-    <me.jingbin.progress.WebProgress xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/progress_bar"
+    <LinearLayout
+        android:id="@+id/ll_progress_bar"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/show"
         app:layout_constraintTop_toBottomOf="@id/ll_address_bar"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints">
+
+        <me.jingbin.progress.WebProgress xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:visibility="gone"
+            tools:ignore="MissingConstraints" />
+
+    </LinearLayout>
 
     <WebView
         android:id="@+id/show"
@@ -55,7 +63,7 @@
         app:layout_constraintBottom_toTopOf="@id/ll_botton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/progress_bar" />
+        app:layout_constraintTop_toBottomOf="@id/ll_progress_bar" />
 
     <LinearLayout
         android:id="@+id/ll_botton"
