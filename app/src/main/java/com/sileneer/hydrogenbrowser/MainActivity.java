@@ -1,8 +1,5 @@
 package com.sileneer.hydrogenbrowser;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -281,9 +278,9 @@ public class MainActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
-    protected static void changeAddressBarHint(int searchEnginesIndex){
+    protected static void changeAddressBarHint(int searchEnginesIndex) {
         String searchEngine = searchEngines[searchEnginesIndex];
-        String addressBarHint = "Search by "+searchEngine+" or input URL";
+        String addressBarHint = "Search by " + searchEngine + " or input URL";
         addressBar.setHint(addressBarHint);
     }
 

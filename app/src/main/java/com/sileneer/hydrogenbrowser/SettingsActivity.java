@@ -1,6 +1,5 @@
 package com.sileneer.hydrogenbrowser;
 
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
