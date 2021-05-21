@@ -22,7 +22,7 @@
             android:layout_weight="1"
             android:background="@drawable/address_bar"
             android:completionThreshold="1"
-            android:drawableStart="@drawable/ic_search"
+            android:drawableStart="@drawable/ic_baseline_search_24"
             android:drawablePadding="10dp"
             android:hint=""
             android:inputType="textUri"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="10dp"
-            android:src="@drawable/icon_menu" />
+            android:src="@drawable/ic_baseline_menu_24" />
 
     </LinearLayout>
 
@@ -94,14 +94,14 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/icon_refresh" />
+            android:src="@drawable/ic_baseline_refresh_24" />
 
         <ImageView
             android:id="@+id/home"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/icon_home" />
+            android:src="@drawable/ic_baseline_home_24" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
