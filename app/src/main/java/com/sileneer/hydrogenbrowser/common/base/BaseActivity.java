@@ -1,4 +1,4 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.common.base;
 
 import android.os.Bundle;
 
@@ -6,6 +6,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.gyf.immersionbar.ImmersionBar;
+import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector;
 
 public class BaseActivity extends AppCompatActivity {
     @Override

@@ -1,4 +1,4 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.common.utils;
 
 import android.app.Activity;
 

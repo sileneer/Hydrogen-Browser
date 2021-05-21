@@ -1,4 +1,4 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.settings;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +8,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class HomepageActivity extends BaseActivity {
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
+import com.sileneer.hydrogenbrowser.MainActivity;
+import com.sileneer.hydrogenbrowser.R;
+import com.sileneer.hydrogenbrowser.common.utils.TitleLayout;
+
+public class HomepageSettingActivity extends BaseActivity {
 
     private Button confirm;
     private EditText url;
@@ -30,14 +35,14 @@ public class HomepageActivity extends BaseActivity {
                 MainActivity.editor_homepage.putString("homepage", input);
                 MainActivity.editor_homepage.commit();
                 MainActivity.homepageUrl = MainActivity.sharedPref_homepage.getString("homepage", "www.google.com");
-                Toast.makeText(HomepageActivity.this, "Homepage edited successfully", Toast.LENGTH_LONG).show();
-                MainActivity.hideKeyboard(HomepageActivity.this);
+                Toast.makeText(HomepageSettingActivity.this, "Homepage edited successfully", Toast.LENGTH_LONG).show();
+                MainActivity.hideKeyboard(HomepageSettingActivity.this);
             }
         });
     }
 
-    protected static void actionStart(Context context) {
-        Intent intent = new Intent(context, HomepageActivity.class);
+    public static void actionStart(Context context) {
+        Intent intent = new Intent(context, HomepageSettingActivity.class);
         context.startActivity(intent);
     }
 }

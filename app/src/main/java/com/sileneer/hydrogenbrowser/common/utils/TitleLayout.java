@@ -1,4 +1,4 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.common.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.sileneer.hydrogenbrowser.R;
 
 public class TitleLayout extends ConstraintLayout {
 
@@ -27,7 +29,7 @@ public class TitleLayout extends ConstraintLayout {
         titleText = findViewById(R.id.title_text);
     }
 
-    protected static void setTitleText(String str){
+    public static void setTitleText(String str){
         titleText.setText(str);
     }
 }

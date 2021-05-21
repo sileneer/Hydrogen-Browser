@@ -3,6 +3,8 @@ package com.sileneer.hydrogenbrowser;
 import android.os.Bundle;
 import android.os.Handler;
 
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
+
 public class SplashActivity extends BaseActivity {
 
     private static final int SPLASH_DISPLAY_LENGTH = 500;

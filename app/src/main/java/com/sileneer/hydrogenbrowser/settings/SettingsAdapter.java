@@ -1,4 +1,4 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.settings;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.sileneer.hydrogenbrowser.MainActivity;
+import com.sileneer.hydrogenbrowser.R;
 
 import java.util.List;
 
@@ -45,7 +48,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
                         showSearchEngines(parent);
                         break;
                     case "Homepage":
-                        HomepageActivity.actionStart(parent.getContext());
+                        HomepageSettingActivity.actionStart(parent.getContext());
                         break;
                     case "Advanced":
                         break;

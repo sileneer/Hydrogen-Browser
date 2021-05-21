@@ -1,15 +1,14 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.settings;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
+import com.sileneer.hydrogenbrowser.BuildConfig;
+import com.sileneer.hydrogenbrowser.R;
+import com.sileneer.hydrogenbrowser.common.utils.TitleLayout;
 
 public class AboutActivity extends BaseActivity {
 
@@ -23,10 +22,10 @@ public class AboutActivity extends BaseActivity {
         TitleLayout.setTitleText("About");
 
         version = findViewById(R.id.app_version);
-        version.setText("Version: "+BuildConfig.VERSION_NAME);
+        version.setText("Version: "+ BuildConfig.VERSION_NAME);
     }
 
-    protected static void actionStart (Context context){
+    public static void actionStart(Context context){
         Intent intent = new Intent(context, AboutActivity.class);
         context.startActivity(intent);
     }
