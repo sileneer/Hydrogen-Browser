@@ -72,12 +72,18 @@ allprojects {
 
 dependencies {
 
+    // https://github.com/gyf-dev/ImmersionBar
     implementation 'com.gyf.immersionbar:immersionbar:3.0.0'
     implementation 'com.gyf.immersionbar:immersionbar-components:3.0.0'
     implementation 'com.gyf.immersionbar:immersionbar-ktx:3.0.0'
 
     // https://github.com/youlookwhat/WebProgress
     implementation 'com.github.youlookwhat:WebProgress:1.1.0'
+
+    // RecyclerView
+    implementation "androidx.recyclerview:recyclerview:1.2.0"
+    // For control over item selection of both touch and mouse driven selection
+    implementation "androidx.recyclerview:recyclerview-selection:1.1.0"
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'

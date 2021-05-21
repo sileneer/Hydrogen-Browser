@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HydrogenBrowser"
         android:usesCleartextTraffic="true">
-        <activity android:name=".HomepageActivity"></activity>
+        <activity android:name=".HomepageActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".AboutActivity" />
         <activity android:name=".SplashActivity">
