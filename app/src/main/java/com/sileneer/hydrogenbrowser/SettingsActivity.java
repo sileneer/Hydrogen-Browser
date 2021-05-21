@@ -41,7 +41,6 @@ public class SettingsActivity extends BaseActivity {
         }
     }
 
-
     protected static void actionStart(Context context) {
         Intent intent = new Intent(context, SettingsActivity.class);
         context.startActivity(intent);

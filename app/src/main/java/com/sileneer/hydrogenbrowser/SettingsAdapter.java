@@ -14,7 +14,6 @@ import java.util.List;
 public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHolder> {
 
     protected List<Settings> mSettingsList;
-    private RecyclerView recyclerView;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         View settingsView;
