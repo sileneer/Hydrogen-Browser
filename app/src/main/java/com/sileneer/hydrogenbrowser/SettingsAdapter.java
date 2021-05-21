@@ -118,6 +118,6 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
             public void onClick(DialogInterface dialog, int i) {
             }
         });
-        AlertDialog alert = ad.show();
+        ad.show();
     }
 }
