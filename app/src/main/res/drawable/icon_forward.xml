@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
-    <item android:drawable="@drawable/ic_forward_black" android:state_pressed="true" />
-    <item android:drawable="@drawable/ic_forward_black" android:state_enabled="true" tools:ignore="StateListReachable" />
-    <item android:drawable="@drawable/ic_forward_grey" android:state_enabled="false" />
+    <item android:drawable="@drawable/ic_baseline_arrow_forward_ios_24_black" android:state_enabled="true" tools:ignore="StateListReachable" />
+    <item android:drawable="@drawable/ic_baseline_arrow_forward_ios_24_grey" android:state_enabled="false" />
 
 </selector>
