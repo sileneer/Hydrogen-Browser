@@ -7,7 +7,7 @@
     android:paddingBottom="20dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.sileneer.hydrogenbrowser.TitleLayout
+    <com.sileneer.hydrogenbrowser.common.utils.TitleLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -1,15 +1,15 @@
-package com.sileneer.hydrogenbrowser;
+package com.sileneer.hydrogenbrowser.settings;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
+import com.sileneer.hydrogenbrowser.R;
+import com.sileneer.hydrogenbrowser.common.utils.TitleLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class SettingsActivity extends BaseActivity {
         }
     }
 
-    protected static void actionStart(Context context) {
+    public static void actionStart(Context context) {
         Intent intent = new Intent(context, SettingsActivity.class);
         context.startActivity(intent);
     }

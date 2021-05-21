@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.sileneer.hydrogenbrowser.TitleLayout
+    <com.sileneer.hydrogenbrowser.common.utils.TitleLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

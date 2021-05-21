@@ -20,6 +20,10 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
+import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector;
+import com.sileneer.hydrogenbrowser.settings.SettingsActivity;
+
 import me.jingbin.progress.WebProgress;
 
 public class MainActivity extends BaseActivity {
@@ -37,13 +41,13 @@ public class MainActivity extends BaseActivity {
 
     private WebProgress progressBar;
 
-    protected static int searchEnginesIndex;
-    protected static SharedPreferences sharedPref_searchEngines;
-    protected static SharedPreferences.Editor editor_searchEngines;
+    public static int searchEnginesIndex;
+    public static SharedPreferences sharedPref_searchEngines;
+    public static SharedPreferences.Editor editor_searchEngines;
 
-    protected static String homepageUrl;
-    protected static SharedPreferences sharedPref_homepage;
-    protected static SharedPreferences.Editor editor_homepage;
+    public static String homepageUrl;
+    public static SharedPreferences sharedPref_homepage;
+    public static SharedPreferences.Editor editor_homepage;
 
     MyWebViewClient webViewClient = new MyWebViewClient();
     MyWebChromeClient webChromeClient = new MyWebChromeClient();
@@ -63,7 +67,7 @@ public class MainActivity extends BaseActivity {
             "https://duckduckgo.com/?q="
     };
 
-    protected static final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
+    public static final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -249,7 +253,7 @@ public class MainActivity extends BaseActivity {
         ad.show();
     }
 
-    protected static void hideKeyboard(Activity context) {
+    public static void hideKeyboard(Activity context) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         // hide keyboard
         imm.hideSoftInputFromWindow(context.getWindow().getDecorView().getWindowToken(), 0);
@@ -273,18 +277,18 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    protected static void actionStart(Context context) {
+    public static void actionStart(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
         context.startActivity(intent);
     }
 
-    protected static void changeAddressBarHint(int searchEnginesIndex) {
+    public static void changeAddressBarHint(int searchEnginesIndex) {
         String searchEngine = searchEngines[searchEnginesIndex];
         String addressBarHint = "Search by " + searchEngine + " or input URL";
         addressBar.setHint(addressBarHint);
     }
 
-    protected static void loadOpenSource() {
+    public static void loadOpenSource() {
         webView.loadUrl("https://github.com/sileneer/Hydrogen-Browser");
     }
 }
