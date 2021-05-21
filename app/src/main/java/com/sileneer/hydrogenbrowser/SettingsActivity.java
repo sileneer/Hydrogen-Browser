@@ -7,14 +7,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SettingsActivity extends BaseActivity {
 
-    private ListView listView;
+    private List<Settings> settingsList = new ArrayList<>();
 
-    private final String[] menus = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
+    private final String[] settings_items = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,80 +27,20 @@ public class SettingsActivity extends BaseActivity {
 
         TitleLayout.setTitleText("Settings");
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(SettingsActivity.this, android.R.layout.simple_list_item_1, menus);
-        listView = findViewById(R.id.list_view);
-        listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position) {
-                    case 0:
-                        showSearchEngines();
-                        break;
-                    case 1:
-                        HomepageActivity.actionStart(SettingsActivity.this);
-                        break;
-                    case 3:
-                        AboutActivity.actionStart(SettingsActivity.this);
-                        break;
-                    case 4:
-                        showOpenSource();
-                        break;
-                }
-            }
-        });
+        initSettings();
+        RecyclerView recyclerview = findViewById(R.id.recycler_view);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerview.setLayoutManager(layoutManager);
+        SettingsAdapter adapter = new SettingsAdapter(settingsList);
+        recyclerview.setAdapter(adapter);
     }
 
-    private void showSearchEngines() {
-        AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
-        ad.setTitle("Please select your search engine:");
-
-        ad.setSingleChoiceItems(MainActivity.searchEngines, MainActivity.searchEnginesIndex, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MainActivity.editor_searchEngines.putInt("search engines", which);
-                MainActivity.editor_searchEngines.commit();
-            }
-        });
-        ad.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MainActivity.searchEnginesIndex = MainActivity.sharedPref_searchEngines.getInt("search engines", 0);
-                MainActivity.changeAddressBarHint(MainActivity.searchEnginesIndex);
-            }
-        });
-
-        ad.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        ad.show();
+    private void initSettings() {
+        for (int i = 0; i < settings_items.length; i++) {
+            settingsList.add(new Settings(settings_items[i]));
+        }
     }
 
-    private void showOpenSource() {
-        AlertDialog.Builder ad = new AlertDialog.Builder(SettingsActivity.this);
-        ad.setTitle("Open Source");
-        ad.setMessage("You will be redirected github.com. Are you sure to continue?");
-        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-                MainActivity.actionStart(SettingsActivity.this);
-                MainActivity.loadOpenSource();
-            }
-        });
-        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-            }
-        });
-        AlertDialog alert = ad.show();
-    }
 
     protected static void actionStart(Context context) {
         Intent intent = new Intent(context, SettingsActivity.class);

@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/hydrogen_browser"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -48,7 +48,7 @@
             android:layout_gravity="center"
             android:paddingTop="10dp"
             android:text=""
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:textSize="18sp" />
     </LinearLayout>
 
