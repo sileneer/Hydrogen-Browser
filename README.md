@@ -4,9 +4,13 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 
 ## Release Notes
 
+### v0.2.4_alpha
+Release date: 21 May 2021
+1. Fix: The inconformity of the back and forward icon
+
 ### v0.2.3_alpha
 1. Fix: The height of WebView will change when the page finishes loading
-2. Fix: When clicking on the address bar when loading the page, 
+2. Fix: Clicking on the address bar when loading the page will lead to the loss of focus after the page finishes loading
 
 ### v0.2.2_alpha
 Release date: 9 May 2021
