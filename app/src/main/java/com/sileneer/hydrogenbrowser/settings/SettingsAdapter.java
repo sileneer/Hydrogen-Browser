@@ -45,7 +45,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
                 Settings setting = mSettingsList.get(position);
                 switch (setting.getName()) {
                     case "Search Engine":
-                        showSearchEngines(parent);
+                        SettingsActivity.showSearchEngines(parent);
                         break;
                     case "Homepage":
                         HomepageSettingActivity.actionStart(parent.getContext());
@@ -56,7 +56,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
                         AboutActivity.actionStart(parent.getContext());
                         break;
                     case "Open Source":
-                        showOpenSource(parent);
+                        SettingsActivity.showOpenSource(parent);
                         break;
                 }
             }
@@ -74,53 +74,5 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
     @Override
     public int getItemCount() {
         return mSettingsList.size();
-    }
-
-    private static void showSearchEngines(ViewGroup parent) {
-        AlertDialog.Builder ad = new AlertDialog.Builder(parent.getContext());
-        ad.setTitle("Please select your search engine:");
-
-        ad.setSingleChoiceItems(MainActivity.searchEngines, MainActivity.searchEnginesIndex, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MainActivity.editor_searchEngines.putInt("search engines", which);
-                MainActivity.editor_searchEngines.commit();
-            }
-        });
-        ad.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MainActivity.searchEnginesIndex = MainActivity.sharedPref_searchEngines.getInt("search engines", 0);
-                MainActivity.changeAddressBarHint(MainActivity.searchEnginesIndex);
-            }
-        });
-
-        ad.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        ad.show();
-    }
-
-    private static void showOpenSource(ViewGroup parent) {
-        AlertDialog.Builder ad = new AlertDialog.Builder(parent.getContext());
-        ad.setTitle("Open Source");
-        ad.setMessage("You will be redirected github.com. Are you sure to continue?");
-        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-                MainActivity.actionStart(parent.getContext());
-                MainActivity.loadOpenSource();
-            }
-        });
-        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int i) {
-            }
-        });
-        ad.show();
     }
 }
