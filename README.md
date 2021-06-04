@@ -11,7 +11,7 @@ Hydrogen Browser is a mobile browser running on Android and HarmonyOS.
 ## Release Notes
 
 ### v0.3.0_alpha
-Release date:
+Release date: 4 June 2021
 1. Optimise: Refactor the settings page by RecyclerView
 2. Optimise: Refactor the project into different package
 3. Fix: No animation when quiting the app
