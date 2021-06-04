@@ -4,6 +4,12 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 
 ## Release Notes
 
+### v0.3.0_alpha
+Release date:
+1. Optimise: Refactor the settings page by RecyclerView
+2. Optimise: Refactor the project into different package
+3. Fix: No animation when quiting the app
+
 ### v0.2.4_alpha
 Release date: 21 May 2021
 1. Fix: The inconformity of the back and forward icon
