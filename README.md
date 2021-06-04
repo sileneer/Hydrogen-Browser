@@ -2,10 +2,16 @@
 
 The release notes are also available in [Simplified Chinese](https://github.com/lzh7522/Hydrogen-Browser/blob/master/README_zh-cn.md)
 
+## What is Hydrogen Browser
+
+Hydrogen Browser is a mobile browser running on Android and HarmonyOS.
+
+![Hydrogen Browser](https://user-images.githubusercontent.com/31238371/120833565-83ae4500-c594-11eb-9ffa-afc0de3cbbdb.png)
+
 ## Release Notes
 
 ### v0.3.0_alpha
-Release date:
+Release date: 4 June 2021
 1. Optimise: Refactor the settings page by RecyclerView
 2. Optimise: Refactor the project into different package
 3. Fix: No animation when quiting the app
