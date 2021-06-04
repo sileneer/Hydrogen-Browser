@@ -1,7 +1,5 @@
 package com.sileneer.hydrogenbrowser.settings;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +7,6 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.sileneer.hydrogenbrowser.MainActivity;
 import com.sileneer.hydrogenbrowser.R;
 
 import java.util.List;
