@@ -6,8 +6,6 @@
 
 氢浏览器是Android/鸿蒙平台上的一款移动端浏览器
 
-![氢浏览器](https://user-images.githubusercontent.com/31238371/120841262-ddffd380-c59d-11eb-87d1-557b553ce5a5.png)
-
 ## 更新日志
 
 ### v0.3.0_alpha
