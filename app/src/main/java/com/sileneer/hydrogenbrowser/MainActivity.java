@@ -1,6 +1,5 @@
 package com.sileneer.hydrogenbrowser;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,10 +7,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -22,14 +23,15 @@ import android.widget.PopupMenu;
 
 import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
 import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector;
+import com.sileneer.hydrogenbrowser.common.utils.Utils;
 import com.sileneer.hydrogenbrowser.settings.SettingsActivity;
 
 import me.jingbin.progress.WebProgress;
 
 public class MainActivity extends BaseActivity {
 
-    protected static AutoCompleteTextView addressBar;
-    protected static WebView webView;
+    protected AutoCompleteTextView addressBar;
+    protected WebView webView;
     private ImageView back;
     private ImageView forward;
     private ImageView refresh;
@@ -41,13 +43,9 @@ public class MainActivity extends BaseActivity {
 
     private WebProgress progressBar;
 
-    public static int searchEnginesIndex;
-    public static SharedPreferences sharedPref_searchEngines;
-    public static SharedPreferences.Editor editor_searchEngines;
+    private SharedPreferences sharedPref;
 
-    public static String homepageUrl;
-    public static SharedPreferences sharedPref_homepage;
-    public static SharedPreferences.Editor editor_homepage;
+    public String homepageUrl;
 
     MyWebViewClient webViewClient = new MyWebViewClient();
     MyWebChromeClient webChromeClient = new MyWebChromeClient();
@@ -70,19 +68,19 @@ public class MainActivity extends BaseActivity {
     public static final String[] searchEngines = {"Google", "Baidu", "Bing", "DuckDuckGo"};
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sharedPref_searchEngines = MainActivity.this.getSharedPreferences(
-                "search engines", Context.MODE_PRIVATE);
-        editor_searchEngines = sharedPref_searchEngines.edit();
-        searchEnginesIndex = sharedPref_searchEngines.getInt("search engines", 0);
+        sharedPref = getSharedPreferences("config", 0);
 
-        sharedPref_homepage = MainActivity.this.getSharedPreferences(
-                "homepage", Context.MODE_PRIVATE);
-        editor_homepage = sharedPref_homepage.edit();
-        homepageUrl = sharedPref_homepage.getString("homepage", "www.google.com");
+        homepageUrl = sharedPref.getString("homepage", "www.google.com");
 
         webView = findViewById(R.id.webview);
         addressBar = findViewById(R.id.url);
@@ -105,15 +103,37 @@ public class MainActivity extends BaseActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl(homepageUrl);
 
-        changeAddressBarHint(searchEnginesIndex);
+        changeAddressBarHint();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
         addressBar.setAdapter(adapter);
+
+        addressBar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                currentUrl = webView.getUrl();
+                addressBar.setText(currentUrl);
+                return false;
+            }
+        });
+
+        addressBar.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (!b) {
+                    String title = webView.getTitle();
+                    if (!TextUtils.isEmpty(title)) {
+                        addressBar.setText(title);
+                    }
+                }
+            }
+        });
+
         addressBar.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    hideKeyboard(MainActivity.this);
+                    Utils.hideKeyboard(MainActivity.this);
                     inputFromAddressBar = addressBar.getText().toString();
                     if (!(inputFromAddressBar.startsWith("http://") || inputFromAddressBar.startsWith("https://"))) {
                         urlFromInput = "http://" + inputFromAddressBar;
@@ -127,7 +147,7 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                     if (isSearched) {
-                        urlFromInput = searchPrefix[searchEnginesIndex] + inputFromAddressBar;
+                        urlFromInput = searchPrefix[sharedPref.getInt("search engines", 0)] + inputFromAddressBar;
                     }
                     webView.loadUrl(urlFromInput);
                     addressBar.clearFocus();
@@ -169,6 +189,25 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MainActivity" ,"onResume");
+
+        changeAddressBarHint();
+        homepageUrl = sharedPref.getString("homepage", "www.google.com");
+
+        Intent intent = getIntent();
+        String url = null;
+        try {
+            url = intent.getData().toString();
+        } catch (Exception e) {
+            url = intent.getStringExtra("url");
+        } finally {
+            openWebpage(url);
+        }
+    }
+
     class MyWebViewClient extends WebViewClient {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -180,9 +219,14 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
             changeStatueOfWebToolsButton();
             progressBar.hide();
-            super.onPageFinished(view, url);
+
+            String title = webView.getTitle();
+            if (!TextUtils.isEmpty(title)) {
+                addressBar.setText(title);
+            }
         }
     }
 
@@ -253,12 +297,6 @@ public class MainActivity extends BaseActivity {
         ad.show();
     }
 
-    public static void hideKeyboard(Activity context) {
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        // hide keyboard
-        imm.hideSoftInputFromWindow(context.getWindow().getDecorView().getWindowToken(), 0);
-    }
-
     private void showPopupMenu(View view) {
         PopupMenu popupMenu = new PopupMenu(this, view);
         popupMenu.getMenuInflater().inflate(R.menu.main, popupMenu.getMenu());
@@ -282,13 +320,20 @@ public class MainActivity extends BaseActivity {
         context.startActivity(intent);
     }
 
-    public static void changeAddressBarHint(int searchEnginesIndex) {
-        String searchEngine = searchEngines[searchEnginesIndex];
+    public static void actionStart(Context context, String url) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra("url", url);
+        context.startActivity(intent);
+    }
+
+    public void changeAddressBarHint() {
+        String searchEngine = searchEngines[sharedPref.getInt("search engines", 0)];
         String addressBarHint = "Search by " + searchEngine + " or input URL";
         addressBar.setHint(addressBarHint);
     }
 
-    public static void loadOpenSource() {
-        webView.loadUrl("https://github.com/sileneer/Hydrogen-Browser");
+    public void openWebpage(String url) {
+        if (url != null)
+            webView.loadUrl(url);
     }
 }
