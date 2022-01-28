@@ -7,7 +7,7 @@ import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
 
 public class SplashActivity extends BaseActivity {
 
-    private static final int SPLASH_DISPLAY_LENGTH = 500;
+    private static final int SPLASH_DISPLAY_LENGTH = 300;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
