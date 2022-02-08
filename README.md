@@ -4,8 +4,7 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 
 ## What is Hydrogen Browser
 
-Hydrogen Browser is a mobile browser running on Android and HarmonyOS.
-
+Hydrogen Browser is a mobile browser running on Android.
 ## Release Notes
 
 ### v0.3.0_alpha
