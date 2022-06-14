@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +20,11 @@ import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
 import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector;
@@ -37,6 +42,7 @@ public class MainActivity extends BaseActivity {
     private ImageView refresh;
     private ImageView home;
     private ImageView menuImage;
+    private TextView multiTabButton;
     protected String inputFromAddressBar;
     protected String urlFromInput;
     protected String currentUrl;
@@ -90,6 +96,7 @@ public class MainActivity extends BaseActivity {
         home = findViewById(R.id.home);
         menuImage = findViewById(R.id.menu);
         progressBar = findViewById(R.id.progress_bar);
+        multiTabButton = findViewById(R.id.multi_tab_button);
 
         menuImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,29 +105,27 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        webView.setWebViewClient(webViewClient);
-        webView.setWebChromeClient(webChromeClient);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl(homepageUrl);
+        multiTabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showMultiTabMenu(multiTabButton);
+            }
+        });
 
-        changeAddressBarHint();
+        initWebView();
+
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.
                 this, android.R.layout.simple_dropdown_item_1line, data);
         addressBar.setAdapter(adapter);
 
-        addressBar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                currentUrl = webView.getUrl();
-                addressBar.setText(currentUrl);
-                return false;
-            }
-        });
-
         addressBar.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if (!b) {
+                if (b) {
+                    addressBar.setText(webView.getUrl());
+                    addressBar.selectAll();
+                } else {
                     String title = webView.getTitle();
                     if (!TextUtils.isEmpty(title)) {
                         addressBar.setText(title);
@@ -128,6 +133,7 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
+
 
         addressBar.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -189,10 +195,20 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    private void initWebView() {
+        changeAddressBarHint();
+
+        webView.setWebViewClient(webViewClient);
+        webView.setWebChromeClient(webChromeClient);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl(homepageUrl);
+        webView.getSettings().setSupportMultipleWindows(true);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("MainActivity" ,"onResume");
+        Log.d("MainActivity", "onResume");
 
         changeAddressBarHint();
         homepageUrl = sharedPref.getString("homepage", "www.google.com");
@@ -223,9 +239,11 @@ public class MainActivity extends BaseActivity {
             changeStatueOfWebToolsButton();
             progressBar.hide();
 
-            String title = webView.getTitle();
-            if (!TextUtils.isEmpty(title)) {
-                addressBar.setText(title);
+            if (!addressBar.isFocused()) {
+                String title = webView.getTitle();
+                if (!TextUtils.isEmpty(title)) {
+                    addressBar.setText(title);
+                }
             }
         }
     }
@@ -277,6 +295,7 @@ public class MainActivity extends BaseActivity {
         // If it wasn't the Back key or there's no web page history, bubble up to the default
         // system behavior (probably exit the activity)
         return super.onKeyDown(keyCode, event);
+
     }
 
     public void ConfirmExit() {
@@ -313,6 +332,13 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
+    }
+
+    private void showMultiTabMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenu().add(0, 1, Menu.NONE, "Tab 1");
+        popupMenu.getMenuInflater().inflate(R.menu.multi_tab, popupMenu.getMenu());
+        popupMenu.show();
     }
 
     public static void actionStart(Context context) {

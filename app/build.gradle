@@ -1,17 +1,15 @@
-def getVersionCode() {// 获取版本号
-    def versionFile = file('version.properties')// 读取第一步新建的文件
-    if (versionFile.canRead()) {// 判断文件读取异常
+def getVersionCode() {
+    def versionFile = file('version.properties')
+    if (versionFile.canRead()) {
         Properties versionProps = new Properties()
         versionProps.load(new FileInputStream(versionFile))
-        def versionCode = versionProps['VERSION_CODE'].toInteger()// 读取文件里面的版本号
+        def versionCode = versionProps['VERSION_CODE'].toInteger()
         def runTasks = gradle.startParameter.taskNames
         if (':app:assembleRelease' in runTasks || 'task1' in runTasks || 'task2' in runTasks) {
-//仅在assembleRelease任务是增加版本号,其他渠道包在此分别配置
-            // 版本号自增之后再写入文件（此处是关键，版本号自增+1）
             versionProps['VERSION_CODE'] = (++versionCode).toString()
             versionProps.store(versionFile.newWriter(), null)
         }
-        return versionCode // 返回自增之后的版本号
+        return versionCode
     } else {
         throw new GradleException("Could not find version.properties!")
     }
@@ -34,8 +32,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdk 32
+    buildToolsVersion '32.0.0'
 
     def currentVersionCode = getVersionCode()
     def currentVersionName = getVersionName()
@@ -43,7 +41,7 @@ android {
     defaultConfig {
         applicationId "com.sileneer.hydrogenbrowser"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdk 32
         versionCode currentVersionCode
         versionName currentVersionName
 
@@ -57,9 +55,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
+    namespace 'com.sileneer.hydrogenbrowser'
 }
 
 allprojects {
@@ -81,14 +80,14 @@ dependencies {
     implementation 'com.github.youlookwhat:WebProgress:1.1.0'
 
     // RecyclerView
-    implementation "androidx.recyclerview:recyclerview:1.2.0"
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     // For control over item selection of both touch and mouse driven selection
     implementation "androidx.recyclerview:recyclerview-selection:1.1.0"
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.6.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
