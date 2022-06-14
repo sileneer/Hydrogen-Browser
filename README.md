@@ -1,11 +1,12 @@
 # Hydrogen Browser
 
+This project is open source under [MIT License](https://github.com/sileneer/Hydrogen-Browser/blob/master/LICENSE)
+
 The release notes are also available in [Simplified Chinese](https://github.com/lzh7522/Hydrogen-Browser/blob/master/README_zh-cn.md)
 
 ## What is Hydrogen Browser
 
-Hydrogen Browser is a mobile browser running on Android and HarmonyOS.
-
+Hydrogen Browser is a mobile browser running on Android.
 ## Release Notes
 
 ### v0.3.0_alpha
