@@ -1,35 +1,27 @@
-package com.sileneer.hydrogenbrowser.common.utils;
+package com.sileneer.hydrogenbrowser.common.utils
 
-import android.app.Activity;
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.app.Activity
+import android.content.Context
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.sileneer.hydrogenbrowser.R
 
-import androidx.constraintlayout.widget.ConstraintLayout;
+class TitleLayout(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
 
-import com.sileneer.hydrogenbrowser.R;
+    private val titleText: TextView
 
-public class TitleLayout extends ConstraintLayout {
-
-    private static TextView titleText;
-
-    public TitleLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        LayoutInflater.from(context).inflate(R.layout.title, this);
-        ImageView titleBack = findViewById(R.id.title_back);
-        titleBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((Activity) getContext()).finish();
-            }
-        });
-        titleText = findViewById(R.id.title_text);
+    init {
+        LayoutInflater.from(context).inflate(R.layout.title, this)
+        findViewById<ImageView>(R.id.title_back).setOnClickListener {
+            (getContext() as Activity).finish()
+        }
+        titleText = findViewById(R.id.title_text)
     }
 
-    public static void setTitleText(String str){
-        titleText.setText(str);
+    fun setTitleText(str: String) {
+        titleText.text = str
     }
 }

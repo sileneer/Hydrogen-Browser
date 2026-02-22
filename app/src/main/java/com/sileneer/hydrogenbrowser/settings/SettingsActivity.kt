@@ -1,50 +1,41 @@
-package com.sileneer.hydrogenbrowser.settings;
+package com.sileneer.hydrogenbrowser.settings
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.sileneer.hydrogenbrowser.R
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity
+import com.sileneer.hydrogenbrowser.common.utils.TitleLayout
 
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+class SettingsActivity : BaseActivity() {
 
-import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
-import com.sileneer.hydrogenbrowser.R;
-import com.sileneer.hydrogenbrowser.common.utils.TitleLayout;
+    private val settingsList = mutableListOf<Settings>()
+    private val settingsItems = arrayOf("Search Engine", "Homepage", "Advanced", "About", "Open Source")
 
-import java.util.ArrayList;
-import java.util.List;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_settings)
 
-public class SettingsActivity extends BaseActivity  {
+        findViewById<TitleLayout>(R.id.title).setTitleText("Settings")
 
-    private List<Settings> settingsList = new ArrayList<>();
-
-    private final String[] settings_items = {"Search Engine", "Homepage", "Advanced", "About", "Open Source"};
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
-
-        TitleLayout.setTitleText("Settings");
-
-        initSettings();
-        RecyclerView recyclerview = findViewById(R.id.recycler_view);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerview.setLayoutManager(layoutManager);
-        SettingsAdapter adapter = new SettingsAdapter(settingsList, this);
-        recyclerview.setAdapter(adapter);
+        initSettings()
+        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = SettingsAdapter(settingsList, this)
     }
 
-    private void initSettings() {
-        for (String settings_item_name: settings_items) {
-            settingsList.add(new Settings(settings_item_name));
+    private fun initSettings() {
+        for (name in settingsItems) {
+            settingsList.add(Settings(name))
         }
     }
 
-    public static void actionStart(Context context) {
-        Intent intent = new Intent(context, SettingsActivity.class);
-        context.startActivity(intent);
+    companion object {
+        fun actionStart(context: Context) {
+            val intent = Intent(context, SettingsActivity::class.java)
+            context.startActivity(intent)
+        }
     }
 }

@@ -33,20 +33,20 @@ plugins {
 apply plugin: 'kotlin-android'
 
 android {
-    buildToolsVersion '36.1.0'
+    compileSdk = 36
+    buildToolsVersion = '36.1.0'
 
     def currentVersionCode = getVersionCode()
     def currentVersionName = getVersionName()
 
     defaultConfig {
-        applicationId "com.sileneer.hydrogenbrowser"
-        minSdkVersion 21
-        targetSdk 36
-        compileSdk 36
-        versionCode currentVersionCode
-        versionName currentVersionName
+        applicationId = "com.sileneer.hydrogenbrowser"
+        minSdk = 21
+        targetSdk = 36
+        versionCode = currentVersionCode
+        versionName = currentVersionName
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -55,11 +55,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
     namespace 'com.sileneer.hydrogenbrowser'
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = 11
+    }
 }
 
 allprojects {

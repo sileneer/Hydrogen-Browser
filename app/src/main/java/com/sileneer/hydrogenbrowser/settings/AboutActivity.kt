@@ -1,32 +1,30 @@
-package com.sileneer.hydrogenbrowser.settings;
+package com.sileneer.hydrogenbrowser.settings
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.TextView;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.widget.TextView
+import com.sileneer.hydrogenbrowser.R
+import com.sileneer.hydrogenbrowser.common.base.BaseActivity
+import com.sileneer.hydrogenbrowser.common.utils.TitleLayout
 
-import com.sileneer.hydrogenbrowser.common.base.BaseActivity;
-import com.sileneer.hydrogenbrowser.BuildConfig;
-import com.sileneer.hydrogenbrowser.R;
-import com.sileneer.hydrogenbrowser.common.utils.TitleLayout;
+class AboutActivity : BaseActivity() {
 
-public class AboutActivity extends BaseActivity {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_about)
 
-    private TextView version;
+        findViewById<TitleLayout>(R.id.title).setTitleText("About")
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_about);
-
-        TitleLayout.setTitleText("About");
-
-        version = findViewById(R.id.app_version);
-        version.setText("Version: "+ BuildConfig.VERSION_NAME);
+        val version = findViewById<TextView>(R.id.app_version)
+        val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+        version.text = getString(R.string.version_format, versionName)
     }
 
-    public static void actionStart(Context context){
-        Intent intent = new Intent(context, AboutActivity.class);
-        context.startActivity(intent);
+    companion object {
+        fun actionStart(context: Context) {
+            val intent = Intent(context, AboutActivity::class.java)
+            context.startActivity(intent)
+        }
     }
 }

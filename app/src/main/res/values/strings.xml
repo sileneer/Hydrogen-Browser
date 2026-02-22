@@ -6,4 +6,5 @@
     <string name="about">About</string>
     <string name="homepage">Homepage</string>
     <string name="input_new_homepage_url_below">Input new homepage url below:</string>
+    <string name="version_format">Version: %1$s</string>
 </resources>

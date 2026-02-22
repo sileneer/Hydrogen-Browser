@@ -1,183 +1,111 @@
-package com.sileneer.hydrogenbrowser.settings;
+package com.sileneer.hydrogenbrowser.settings
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.net.toUri
+import androidx.recyclerview.widget.RecyclerView
+import com.sileneer.hydrogenbrowser.MainActivity
+import com.sileneer.hydrogenbrowser.R
+import com.sileneer.hydrogenbrowser.common.SearchEngine
+import com.sileneer.hydrogenbrowser.common.utils.Utils
 
-import androidx.recyclerview.widget.RecyclerView;
+class SettingsAdapter(
+    private val settingsList: List<Settings>,
+    private val context: Context
+) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
 
-import com.sileneer.hydrogenbrowser.MainActivity;
-import com.sileneer.hydrogenbrowser.R;
-import com.sileneer.hydrogenbrowser.common.utils.Utils;
+    private val editor = context.getSharedPreferences("config", 0).edit()
 
-import java.util.List;
-
-public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHolder> {
-
-    protected List<Settings> mSettingsList;
-    private Context context;
-
-    private static SharedPreferences.Editor editor;
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        View settingsView;
-        TextView settingsText;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            settingsView = itemView;
-            settingsText = itemView.findViewById(R.id.settings_item_text);
-        }
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val settingsView: View = itemView
+        val settingsText: TextView = itemView.findViewById(R.id.settings_item_text)
     }
 
-    public SettingsAdapter(List<Settings> mSettingsList, Context context) {
-        this.mSettingsList = mSettingsList;
-        this.context = context;
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.settings_item, parent, false);
-        final ViewHolder holder = new ViewHolder(view);
-        editor = context.getSharedPreferences("config", 0).edit();
-        holder.settingsView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                int position = holder.getAbsoluteAdapterPosition();
-                Settings setting = mSettingsList.get(position);
-                switch (setting.getName()) {
-
-                    case "Search Engine":
-                        AlertDialog.Builder ad_searchEngine = new AlertDialog.Builder(parent.getContext());
-                        ad_searchEngine.setTitle("Please select your search engine:");
-
-                        ad_searchEngine.setSingleChoiceItems(MainActivity.searchEngines, context.getSharedPreferences("config", 0).getInt("search engines", 0), new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                editor.putInt("search engines", which);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.settings_item, parent, false)
+        val holder = ViewHolder(view)
+        holder.settingsView.setOnClickListener {
+            val position = holder.absoluteAdapterPosition
+            val setting = settingsList[position]
+            when (setting.name) {
+                "Search Engine" -> {
+                    AlertDialog.Builder(parent.context)
+                        .setTitle("Please select your search engine:")
+                        .setSingleChoiceItems(
+                            SearchEngine.displayNames,
+                            context.getSharedPreferences("config", 0).getInt("search engines", 0)
+                        ) { _, which ->
+                            editor.putInt("search engines", which)
+                        }
+                        .setPositiveButton("OK") { _, _ -> editor.apply() }
+                        .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                        .show()
+                }
+                "Homepage" -> {
+                    val adView = LayoutInflater.from(context)
+                        .inflate(R.layout.homepage_alert_dialog, null, false)
+                    val et = adView.findViewById<EditText>(R.id.homepage_edittext)
+                    AlertDialog.Builder(context)
+                        .setTitle("Homepage")
+                        .setMessage(
+                            "\nCurrent homepage: " +
+                                    context.getSharedPreferences("config", Context.MODE_PRIVATE)
+                                        .getString("homepage", "www.google.com")
+                        )
+                        .setView(adView)
+                        .setPositiveButton("OK") { _, _ ->
+                            val input = et.text.toString()
+                            if (!TextUtils.isEmpty(input)) {
+                                editor.putString("homepage", input)
+                                editor.apply()
+                                Toast.makeText(context, "Homepage edited successfully", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(context, "Error: Input URL is empty", Toast.LENGTH_LONG).show()
                             }
-                        });
-                        ad_searchEngine.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                editor.apply();
-                            }
-                        });
-
-                        ad_searchEngine.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                        ad_searchEngine.show();
-                        break;
-
-                    case "Homepage":
-                        AlertDialog.Builder ad_homepage = new AlertDialog.Builder(context);
-                        ad_homepage.setTitle("Homepage");
-                        ad_homepage.setMessage("\nCurrent homepage: " +
-                                context.getSharedPreferences("config", Context.MODE_PRIVATE)
-                                        .getString("homepage", "www.google.com"));
-
-                        View ad_homepage_view = LayoutInflater.from(context).inflate(R.layout.homepage_alert_dialog, null, false);
-                        ad_homepage.setView(ad_homepage_view);
-
-                        EditText et = ad_homepage_view.findViewById(R.id.homepage_edittext);
-
-                        ad_homepage.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                String input = et.getText().toString();
-                                if (!TextUtils.isEmpty(input)) {
-                                    editor.putString("homepage", input);
-                                    editor.apply();
-                                    Toast.makeText(context, "Homepage edited successfully", Toast.LENGTH_LONG).show();
-                                } else {
-                                    Toast.makeText(context, "Error: Input URL is empty", Toast.LENGTH_LONG).show();
-                                }
-                                Utils.hideKeyboard(context, ad_homepage_view);
-                            }
-                        });
-                        ad_homepage.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Utils.hideKeyboard(context, ad_homepage_view);
-                                dialogInterface.dismiss();
-                            }
-                        });
-                        ad_homepage.setCancelable(false);
-                        ad_homepage.show();
-
-                        et.requestFocus();
-                        Utils.showKeyboard(context, et);
-
-
-                        break;
-
-                    case "Advanced":
-                        break;
-
-                    case "About":
-                        AboutActivity.actionStart(parent.getContext());
-                        break;
-
-                    case "Open Source":
-                        AlertDialog.Builder ad_openSource = new AlertDialog.Builder(context);
-                        ad_openSource.setTitle("Open Source");
-                        ad_openSource.setMessage("You will be redirected github.com. Are you sure to continue?");
-                        ad_openSource.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int i) {
-                                MainActivity.actionStart(parent.getContext(), "https://github.com/sileneer/Hydrogen-Browser");
-                            }
-                        });
-                        ad_openSource.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int i) {
-                            }
-                        });
-                        ad_openSource.setNeutralButton("Open in Default Browser", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                intent.setData(Uri.parse("https://github.com/sileneer/Hydrogen-Browser"));
-                                context.startActivity(intent);
-                            }
-                        });
-                        ad_openSource.show();
-                        break;
+                            Utils.hideKeyboard(context, adView)
+                        }
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            Utils.hideKeyboard(context, adView)
+                            dialog.dismiss()
+                        }
+                        .setCancelable(false)
+                        .show()
+                    et.requestFocus()
+                    Utils.showKeyboard(context, et)
+                }
+                "Advanced" -> { }
+                "About" -> AboutActivity.actionStart(parent.context)
+                "Open Source" -> {
+                    AlertDialog.Builder(context)
+                        .setTitle("Open Source")
+                        .setMessage("You will be redirected github.com. Are you sure to continue?")
+                        .setPositiveButton("Yes") { _, _ ->
+                            MainActivity.actionStart(parent.context, "https://github.com/sileneer/Hydrogen-Browser")
+                        }
+                        .setNegativeButton("No") { _, _ -> }
+                        .setNeutralButton("Open in Default Browser") { _, _ ->
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data = "https://github.com/sileneer/Hydrogen-Browser".toUri()
+                            context.startActivity(intent)
+                        }
+                        .show()
                 }
             }
-        });
-        return holder;
+        }
+        return holder
     }
 
-    @Override
-    public void onBindViewHolder(SettingsAdapter.ViewHolder holder, int position) {
-        Settings settings = mSettingsList.get(position);
-        holder.settingsText.setText(settings.getName());
-
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.settingsText.text = settingsList[position].name
     }
 
-    @Override
-    public int getItemCount() {
-        return mSettingsList.size();
-    }
+    override fun getItemCount(): Int = settingsList.size
 }
-

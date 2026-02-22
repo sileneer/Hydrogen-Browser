@@ -1,35 +1,27 @@
-package com.sileneer.hydrogenbrowser.common.base;
+package com.sileneer.hydrogenbrowser.common.base
 
-import android.os.Bundle;
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.gyf.immersionbar.ImmersionBar
+import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+open class BaseActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-import com.gyf.immersionbar.ImmersionBar;
-import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector;
+        ActivityCollector.addActivity(this)
 
-public class BaseActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        ImmersionBar.with(this).statusBarDarkFont(true)
+        ImmersionBar.with(this).autoDarkModeEnable(true)
+        ImmersionBar.with(this).transparentBar().fullScreen(false)
+        ImmersionBar.with(this).keyboardEnable(true)
+        ImmersionBar.with(this).fitsSystemWindows(true).init()
 
-        ActivityCollector.addActivity(this);
-
-        ImmersionBar.with(this).statusBarDarkFont(true);
-        ImmersionBar.with(this).autoDarkModeEnable(true);
-        ImmersionBar.with(this).transparentBar().fullScreen(false);
-        ImmersionBar.with(this).keyboardEnable(true);
-        ImmersionBar.with(this).fitsSystemWindows(true).init();
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
+        supportActionBar?.hide()
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ActivityCollector.removeActivity(this);
+    override fun onDestroy() {
+        super.onDestroy()
+        ActivityCollector.removeActivity(this)
     }
 }
