@@ -14,7 +14,7 @@ class AboutActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
 
-        findViewById<TitleLayout>(R.id.title).setTitleText("About")
+        findViewById<TitleLayout>(R.id.title).setTitleText(getString(R.string.about))
 
         val version = findViewById<TextView>(R.id.app_version)
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName

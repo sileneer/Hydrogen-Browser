@@ -196,10 +196,10 @@ class MainActivity : BaseActivity() {
 
     private fun confirmExit() {
         AlertDialog.Builder(this)
-            .setTitle("Warning")
-            .setMessage("Are you sure to exit?")
-            .setPositiveButton("Yes") { _, _ -> ActivityCollector.finishAll() }
-            .setNegativeButton("No") { _, _ -> }
+            .setTitle(R.string.exit_warning_title)
+            .setMessage(R.string.exit_warning_message)
+            .setPositiveButton(R.string.yes) { _, _ -> ActivityCollector.finishAll() }
+            .setNegativeButton(R.string.no) { _, _ -> }
             .show()
     }
 
@@ -219,14 +219,14 @@ class MainActivity : BaseActivity() {
 
     private fun showMultiTabMenu(view: View) {
         val popupMenu = PopupMenu(this, view)
-        popupMenu.menu.add(0, 1, Menu.NONE, "Tab 1")
+        popupMenu.menu.add(0, 1, Menu.NONE, getString(R.string.tab_1))
         popupMenu.menuInflater.inflate(R.menu.multi_tab, popupMenu.menu)
         popupMenu.show()
     }
 
     fun changeAddressBarHint() {
         val engine = SearchEngine.fromIndex(sharedPref.getInt("search engines", 0))
-        addressBar.hint = "Search by ${engine.displayName} or input URL"
+        addressBar.hint = getString(R.string.address_bar_hint, engine.displayName)
     }
 
     fun openWebpage(url: String?) {

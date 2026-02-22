@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 def getVersionCode() {
     def versionFile = file('version.properties')
     if (versionFile.canRead()) {
@@ -51,7 +53,8 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -67,7 +70,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = 11
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
@@ -91,8 +94,7 @@ dependencies {
 
     // RecyclerView
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    // For control over item selection of both touch and mouse driven selection
-    implementation 'androidx.recyclerview:recyclerview-selection:1.2.0'
+
 
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.13.0'

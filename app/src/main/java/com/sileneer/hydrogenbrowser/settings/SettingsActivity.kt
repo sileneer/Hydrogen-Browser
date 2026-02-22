@@ -11,25 +11,15 @@ import com.sileneer.hydrogenbrowser.common.utils.TitleLayout
 
 class SettingsActivity : BaseActivity() {
 
-    private val settingsList = mutableListOf<Settings>()
-    private val settingsItems = arrayOf("Search Engine", "Homepage", "Advanced", "About", "Open Source")
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        findViewById<TitleLayout>(R.id.title).setTitleText("Settings")
+        findViewById<TitleLayout>(R.id.title).setTitleText(getString(R.string.settings))
 
-        initSettings()
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = SettingsAdapter(settingsList, this)
-    }
-
-    private fun initSettings() {
-        for (name in settingsItems) {
-            settingsList.add(Settings(name))
-        }
+        recyclerView.adapter = SettingsAdapter(SettingsItem.entries, this)
     }
 
     companion object {
