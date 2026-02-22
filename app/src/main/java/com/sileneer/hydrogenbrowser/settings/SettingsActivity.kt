@@ -4,22 +4,22 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.sileneer.hydrogenbrowser.R
 import com.sileneer.hydrogenbrowser.common.base.BaseActivity
-import com.sileneer.hydrogenbrowser.common.utils.TitleLayout
+import com.sileneer.hydrogenbrowser.databinding.ActivitySettingsBinding
 
 class SettingsActivity : BaseActivity() {
 
+    private lateinit var binding: ActivitySettingsBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        findViewById<TitleLayout>(R.id.title).setTitleText(getString(R.string.settings))
+        binding.title.setTitleText(getString(com.sileneer.hydrogenbrowser.R.string.settings))
 
-        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = SettingsAdapter(SettingsItem.entries, this)
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = SettingsAdapter(SettingsItem.entries, this)
     }
 
     companion object {

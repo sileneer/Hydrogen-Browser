@@ -29,6 +29,7 @@
     <string name="current_homepage">\nCurrent homepage: %1$s</string>
     <string name="homepage_edit_success">Homepage edited successfully</string>
     <string name="homepage_edit_error_empty">Error: Input URL is empty</string>
+    <string name="homepage_edit_error_invalid">Error: Invalid URL format</string>
 
     <!-- Open Source dialog -->
     <string name="open_source_title">Open Source</string>

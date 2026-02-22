@@ -4,11 +4,10 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.text.TextUtils
+import android.util.Patterns
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +16,7 @@ import com.sileneer.hydrogenbrowser.R
 import com.sileneer.hydrogenbrowser.common.PreferencesRepository
 import com.sileneer.hydrogenbrowser.common.SearchEngine
 import com.sileneer.hydrogenbrowser.common.utils.Utils
+import com.sileneer.hydrogenbrowser.databinding.SettingsItemBinding
 
 class SettingsAdapter(
     private val items: List<SettingsItem>,
@@ -25,18 +25,16 @@ class SettingsAdapter(
 
     private val prefs = PreferencesRepository(context)
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val settingsText: TextView = itemView.findViewById(R.id.settings_item_text)
-    }
+    class ViewHolder(val binding: SettingsItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.settings_item, parent, false)
-        return ViewHolder(view)
+        val binding = SettingsItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
-        holder.settingsText.setText(item.titleRes)
+        holder.binding.settingsItemText.setText(item.titleRes)
         holder.itemView.setOnClickListener {
             when (item) {
                 SettingsItem.SEARCH_ENGINE -> showSearchEngineDialog(holder.itemView.context)
@@ -73,11 +71,13 @@ class SettingsAdapter(
             .setView(adView)
             .setPositiveButton(R.string.ok) { _, _ ->
                 val input = et.text.toString()
-                if (!TextUtils.isEmpty(input)) {
+                if (TextUtils.isEmpty(input)) {
+                    Toast.makeText(context, R.string.homepage_edit_error_empty, Toast.LENGTH_LONG).show()
+                } else if (!Patterns.WEB_URL.matcher(input).matches()) {
+                    Toast.makeText(context, R.string.homepage_edit_error_invalid, Toast.LENGTH_LONG).show()
+                } else {
                     prefs.homepage = input
                     Toast.makeText(context, R.string.homepage_edit_success, Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(context, R.string.homepage_edit_error_empty, Toast.LENGTH_LONG).show()
                 }
                 Utils.hideKeyboard(context, adView)
             }

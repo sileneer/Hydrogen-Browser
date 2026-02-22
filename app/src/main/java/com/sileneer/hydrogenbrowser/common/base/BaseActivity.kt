@@ -11,11 +11,14 @@ open class BaseActivity : AppCompatActivity() {
 
         ActivityCollector.addActivity(this)
 
-        ImmersionBar.with(this).statusBarDarkFont(true)
-        ImmersionBar.with(this).autoDarkModeEnable(true)
-        ImmersionBar.with(this).transparentBar().fullScreen(false)
-        ImmersionBar.with(this).keyboardEnable(true)
-        ImmersionBar.with(this).fitsSystemWindows(true).init()
+        ImmersionBar.with(this)
+            .statusBarDarkFont(true)
+            .autoDarkModeEnable(true)
+            .transparentBar()
+            .fullScreen(false)
+            .keyboardEnable(true)
+            .fitsSystemWindows(true)
+            .init()
 
         supportActionBar?.hide()
     }

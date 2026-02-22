@@ -9,7 +9,7 @@ import com.sileneer.hydrogenbrowser.tab.TabManager
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    val prefs = PreferencesRepository(application)
+    private val prefs = PreferencesRepository(application)
     val tabManager = TabManager()
 
     fun resolveUrl(input: String): String {

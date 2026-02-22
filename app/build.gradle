@@ -60,6 +60,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        viewBinding = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -85,9 +86,6 @@ allprojects {
 dependencies {
 
     implementation 'com.geyifeng.immersionbar:immersionbar:3.2.2'
-    implementation 'com.geyifeng.immersionbar:immersionbar-ktx:3.2.2'
-    // deprecated
-    implementation 'com.geyifeng.immersionbar:immersionbar-components:3.2.2'
 
     // https://github.com/youlookwhat/WebProgress
     implementation 'com.github.youlookwhat:WebProgress:1.1.0'
