@@ -39,6 +39,7 @@ class SettingsAdapter(
             when (item) {
                 SettingsItem.SEARCH_ENGINE -> showSearchEngineDialog(holder.itemView.context)
                 SettingsItem.HOMEPAGE -> showHomepageDialog()
+                SettingsItem.LANGUAGE -> LanguageActivity.actionStart(holder.itemView.context)
                 SettingsItem.ABOUT -> AboutActivity.actionStart(holder.itemView.context)
                 SettingsItem.OPEN_SOURCE -> showOpenSourceDialog(holder.itemView.context)
             }

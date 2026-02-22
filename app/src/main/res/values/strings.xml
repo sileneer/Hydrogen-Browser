@@ -12,8 +12,15 @@
     <!-- Settings items -->
     <string name="settings_search_engine">Search Engine</string>
     <string name="settings_homepage">Homepage</string>
+    <string name="settings_language">Language</string>
     <string name="settings_about">About</string>
     <string name="settings_open_source">Open Source</string>
+
+    <!-- Language settings -->
+    <string name="language">Language</string>
+    <string name="language_follow_system">Follow System</string>
+    <string name="language_english">English</string>
+    <string name="language_chinese">简体中文</string>
 
     <!-- Common dialog buttons -->
     <string name="ok">OK</string>
@@ -48,4 +55,7 @@
     <string name="new_tab">New Tab</string>
     <string name="new_tab_action">+ New Tab</string>
     <string name="close_tab">Close</string>
+
+    <!-- WebView errors -->
+    <string name="webview_error">Error: %1$s</string>
 </resources>

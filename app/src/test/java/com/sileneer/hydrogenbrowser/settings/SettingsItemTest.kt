@@ -7,8 +7,8 @@ import org.junit.Test
 class SettingsItemTest {
 
     @Test
-    fun `entries count is 4`() {
-        assertEquals(4, SettingsItem.entries.size)
+    fun `entries count is 5`() {
+        assertEquals(5, SettingsItem.entries.size)
     }
 
     @Test
@@ -23,7 +23,8 @@ class SettingsItemTest {
         val entries = SettingsItem.entries
         assertEquals(SettingsItem.SEARCH_ENGINE, entries[0])
         assertEquals(SettingsItem.HOMEPAGE, entries[1])
-        assertEquals(SettingsItem.ABOUT, entries[2])
-        assertEquals(SettingsItem.OPEN_SOURCE, entries[3])
+        assertEquals(SettingsItem.LANGUAGE, entries[2])
+        assertEquals(SettingsItem.ABOUT, entries[3])
+        assertEquals(SettingsItem.OPEN_SOURCE, entries[4])
     }
 }

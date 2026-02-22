@@ -43,7 +43,7 @@ class MainActivity : BaseActivity() {
                 }
             },
             onError = { _, description, _ ->
-                binding.url.setText("Error: $description")
+                binding.url.setText(getString(R.string.webview_error, description))
             }
         )
     }
