@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.TextUtils
@@ -21,8 +20,7 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import com.sileneer.hydrogenbrowser.common.SearchEngine
-import com.sileneer.hydrogenbrowser.common.UrlUtils
+import androidx.activity.viewModels
 import com.sileneer.hydrogenbrowser.common.base.BaseActivity
 import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector
 import com.sileneer.hydrogenbrowser.common.utils.Utils
@@ -30,6 +28,8 @@ import com.sileneer.hydrogenbrowser.settings.SettingsActivity
 import me.jingbin.progress.WebProgress
 
 class MainActivity : BaseActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
 
     private lateinit var addressBar: AutoCompleteTextView
     private lateinit var webView: WebView
@@ -39,14 +39,7 @@ class MainActivity : BaseActivity() {
     private lateinit var home: ImageView
     private lateinit var menuImage: ImageView
     private lateinit var multiTabButton: TextView
-    private var inputFromAddressBar: String? = null
-    private var urlFromInput: String? = null
-    private var currentUrl: String? = null
-
     private lateinit var progressBar: WebProgress
-    private lateinit var sharedPref: SharedPreferences
-
-    var homepageUrl: String? = null
 
     private val webViewClient = MyWebViewClient()
     private val webChromeClient = MyWebChromeClient()
@@ -59,9 +52,6 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        sharedPref = getSharedPreferences("config", 0)
-        homepageUrl = sharedPref.getString("homepage", "www.google.com")
 
         webView = findViewById(R.id.webview)
         addressBar = findViewById(R.id.url)
@@ -77,6 +67,7 @@ class MainActivity : BaseActivity() {
         multiTabButton.setOnClickListener { showMultiTabMenu(multiTabButton) }
 
         initWebView()
+        updateTabCount()
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, data)
         addressBar.setAdapter(adapter)
@@ -96,10 +87,9 @@ class MainActivity : BaseActivity() {
         addressBar.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_ENTER) {
                 Utils.hideKeyboard(this@MainActivity)
-                inputFromAddressBar = addressBar.text.toString().trim()
-                val engine = SearchEngine.fromIndex(sharedPref.getInt("search engines", 0))
-                urlFromInput = UrlUtils.resolveInput(inputFromAddressBar!!, engine)
-                webView.loadUrl(urlFromInput!!)
+                val input = addressBar.text.toString().trim()
+                val url = viewModel.resolveUrl(input)
+                webView.loadUrl(url)
                 addressBar.clearFocus()
                 true
             } else {
@@ -113,7 +103,7 @@ class MainActivity : BaseActivity() {
         back.setOnClickListener { pageGoBack() }
         forward.setOnClickListener { pageGoForward() }
         refresh.setOnClickListener { webView.loadUrl(webView.url!!) }
-        home.setOnClickListener { webView.loadUrl(homepageUrl!!) }
+        home.setOnClickListener { webView.loadUrl(viewModel.getHomepage()) }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -128,20 +118,18 @@ class MainActivity : BaseActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
-        changeAddressBarHint()
+        updateAddressBarHint()
         webView.webViewClient = webViewClient
         webView.webChromeClient = webChromeClient
         webView.settings.javaScriptEnabled = true
-        webView.loadUrl(homepageUrl!!)
+        webView.loadUrl(viewModel.getHomepage())
         webView.settings.setSupportMultipleWindows(true)
     }
 
     override fun onResume() {
         super.onResume()
         Log.d("MainActivity", "onResume")
-
-        changeAddressBarHint()
-        homepageUrl = sharedPref.getString("homepage", "www.google.com")
+        updateAddressBarHint()
 
         val intent = intent
         val url = intent.data?.toString() ?: intent.getStringExtra("url")
@@ -152,16 +140,16 @@ class MainActivity : BaseActivity() {
 
     private inner class MyWebViewClient : WebViewClient() {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-            changeStatueOfWebToolsButton()
-            currentUrl = webView.url
-            addressBar.setText(currentUrl)
+            updateNavigationButtons()
+            addressBar.setText(webView.url)
             progressBar.show()
         }
 
         override fun onPageFinished(view: WebView, url: String) {
             super.onPageFinished(view, url)
-            changeStatueOfWebToolsButton()
+            updateNavigationButtons()
             progressBar.hide()
+            saveCurrentTabState()
 
             if (!addressBar.isFocused) {
                 val title = webView.title
@@ -179,7 +167,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun changeStatueOfWebToolsButton() {
+    private fun updateNavigationButtons() {
         back.isEnabled = webView.canGoBack()
         forward.isEnabled = webView.canGoForward()
     }
@@ -219,13 +207,54 @@ class MainActivity : BaseActivity() {
 
     private fun showMultiTabMenu(view: View) {
         val popupMenu = PopupMenu(this, view)
-        popupMenu.menu.add(0, 1, Menu.NONE, getString(R.string.tab_1))
-        popupMenu.menuInflater.inflate(R.menu.multi_tab, popupMenu.menu)
+        val tabManager = viewModel.tabManager
+        for ((index, tab) in tabManager.tabs.withIndex()) {
+            val title = if (index == tabManager.activeTabIndex)
+                "\u25B6 ${tab.displayTitle}" else tab.displayTitle
+            popupMenu.menu.add(0, index, Menu.NONE, title)
+        }
+        popupMenu.menu.add(1, MENU_NEW_TAB, Menu.NONE, getString(R.string.new_tab_action))
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_NEW_TAB -> {
+                    saveCurrentTabState()
+                    tabManager.addTab()
+                    updateTabCount()
+                    webView.loadUrl(viewModel.getHomepage())
+                    true
+                }
+                else -> {
+                    val index = item.itemId
+                    if (index != tabManager.activeTabIndex && index in tabManager.tabs.indices) {
+                        saveCurrentTabState()
+                        tabManager.switchTo(index)
+                        val tab = tabManager.activeTab
+                        if (tab.url.isNotEmpty()) {
+                            webView.loadUrl(tab.url)
+                        } else {
+                            webView.loadUrl(viewModel.getHomepage())
+                        }
+                    }
+                    true
+                }
+            }
+        }
         popupMenu.show()
     }
 
-    fun changeAddressBarHint() {
-        val engine = SearchEngine.fromIndex(sharedPref.getInt("search engines", 0))
+    private fun saveCurrentTabState() {
+        viewModel.tabManager.updateActiveTab(
+            url = webView.url ?: "",
+            title = webView.title ?: ""
+        )
+    }
+
+    private fun updateTabCount() {
+        multiTabButton.text = viewModel.tabManager.tabCount.toString()
+    }
+
+    private fun updateAddressBarHint() {
+        val engine = viewModel.getSearchEngine()
         addressBar.hint = getString(R.string.address_bar_hint, engine.displayName)
     }
 
@@ -234,6 +263,8 @@ class MainActivity : BaseActivity() {
     }
 
     companion object {
+        private const val MENU_NEW_TAB = 1000
+
         private val data = arrayOf(
             "www.baidu.com", "baidu.com",
             "www.google.com", "google.com",

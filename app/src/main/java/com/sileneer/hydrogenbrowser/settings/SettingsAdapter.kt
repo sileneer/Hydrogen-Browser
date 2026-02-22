@@ -14,6 +14,7 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.sileneer.hydrogenbrowser.MainActivity
 import com.sileneer.hydrogenbrowser.R
+import com.sileneer.hydrogenbrowser.common.PreferencesRepository
 import com.sileneer.hydrogenbrowser.common.SearchEngine
 import com.sileneer.hydrogenbrowser.common.utils.Utils
 
@@ -22,7 +23,7 @@ class SettingsAdapter(
     private val context: Context
 ) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
 
-    private val editor = context.getSharedPreferences("config", 0).edit()
+    private val prefs = PreferencesRepository(context)
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val settingsText: TextView = itemView.findViewById(R.id.settings_item_text)
@@ -53,12 +54,12 @@ class SettingsAdapter(
             .setTitle(R.string.select_search_engine)
             .setSingleChoiceItems(
                 SearchEngine.displayNames,
-                context.getSharedPreferences("config", 0).getInt("search engines", 0)
+                prefs.searchEngineIndex
             ) { _, which ->
-                editor.putInt("search engines", which)
+                prefs.searchEngineIndex = which
             }
-            .setPositiveButton(R.string.ok) { _, _ -> editor.apply() }
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.ok, null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
@@ -66,17 +67,14 @@ class SettingsAdapter(
         val adView = LayoutInflater.from(context)
             .inflate(R.layout.homepage_alert_dialog, null, false)
         val et = adView.findViewById<EditText>(R.id.homepage_edittext)
-        val currentHomepage = context.getSharedPreferences("config", Context.MODE_PRIVATE)
-            .getString("homepage", "www.google.com")
         AlertDialog.Builder(context)
             .setTitle(R.string.homepage)
-            .setMessage(context.getString(R.string.current_homepage, currentHomepage))
+            .setMessage(context.getString(R.string.current_homepage, prefs.homepage))
             .setView(adView)
             .setPositiveButton(R.string.ok) { _, _ ->
                 val input = et.text.toString()
                 if (!TextUtils.isEmpty(input)) {
-                    editor.putString("homepage", input)
-                    editor.apply()
+                    prefs.homepage = input
                     Toast.makeText(context, R.string.homepage_edit_success, Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(context, R.string.homepage_edit_error_empty, Toast.LENGTH_LONG).show()
@@ -100,7 +98,7 @@ class SettingsAdapter(
             .setPositiveButton(R.string.yes) { _, _ ->
                 MainActivity.actionStart(dialogContext, "https://github.com/sileneer/Hydrogen-Browser")
             }
-            .setNegativeButton(R.string.no) { _, _ -> }
+            .setNegativeButton(R.string.no, null)
             .setNeutralButton(R.string.open_in_default_browser) { _, _ ->
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.data = "https://github.com/sileneer/Hydrogen-Browser".toUri()

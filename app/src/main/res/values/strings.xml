@@ -41,5 +41,10 @@
 
     <!-- Address bar -->
     <string name="address_bar_hint">Search by %1$s or input URL</string>
+
+    <!-- Tabs -->
     <string name="tab_1">Tab 1</string>
+    <string name="new_tab">New Tab</string>
+    <string name="new_tab_action">+ New Tab</string>
+    <string name="close_tab">Close</string>
 </resources>
