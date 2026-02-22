@@ -1,5 +1,6 @@
 package com.sileneer.hydrogenbrowser.common.base
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
@@ -11,8 +12,11 @@ open class BaseActivity : AppCompatActivity() {
 
         ActivityCollector.addActivity(this)
 
+        val isDarkMode = (resources.configuration.uiMode and
+            Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
         ImmersionBar.with(this)
-            .statusBarDarkFont(true)
+            .statusBarDarkFont(!isDarkMode)
             .autoDarkModeEnable(true)
             .transparentBar()
             .fullScreen(false)

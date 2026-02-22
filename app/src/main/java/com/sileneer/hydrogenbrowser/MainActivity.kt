@@ -17,6 +17,8 @@ import androidx.activity.viewModels
 import com.sileneer.hydrogenbrowser.common.base.BaseActivity
 import com.sileneer.hydrogenbrowser.common.utils.ActivityCollector
 import com.sileneer.hydrogenbrowser.common.utils.Utils
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.sileneer.hydrogenbrowser.databinding.ActivityMainBinding
 import com.sileneer.hydrogenbrowser.settings.SettingsActivity
 
@@ -128,6 +130,10 @@ class MainActivity : BaseActivity() {
         binding.webview.settings.javaScriptEnabled = true
         binding.webview.loadUrl(viewModel.getHomepage())
         binding.webview.settings.setSupportMultipleWindows(true)
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+            WebSettingsCompat.setAlgorithmicDarkeningAllowed(binding.webview.settings, true)
+        }
     }
 
     override fun onResume() {
