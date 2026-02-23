@@ -40,8 +40,8 @@
 
     <!-- Open Source dialog -->
     <string name="open_source_title">Open Source</string>
-    <string name="open_source_redirect">You will be redirected to github.com. Are you sure to continue?</string>
-    <string name="open_in_default_browser">Open in Default Browser</string>
+    <string name="open_source_license">This project is licensed under the MIT License.\n\nCopyright (c) 2020–2026 Sileneer\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.</string>
+    <string name="view_on_github">View on GitHub</string>
 
     <!-- Exit dialog -->
     <string name="exit_warning_title">Warning</string>
@@ -49,6 +49,11 @@
 
     <!-- Address bar -->
     <string name="address_bar_hint">Search by %1$s or input URL</string>
+
+    <!-- Menu items -->
+    <string name="menu_back">Back</string>
+    <string name="menu_forward">Forward</string>
+    <string name="menu_home">Home</string>
 
     <!-- Tabs -->
     <string name="tab_1">Tab 1</string>

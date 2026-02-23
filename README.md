@@ -9,6 +9,17 @@ The release notes are also available in [Simplified Chinese](https://github.com/
 Hydrogen Browser is a mobile browser running on Android.
 ## Release Notes
 
+### v0.4.0_alpha
+Release date: 23 February 2026
+1. New: Full rewrite with Jetpack Compose and Material 3
+2. New: Dynamic color (Material You) support on Android 12+
+3. New: Expandable menu in address bar (back, forward, home, settings)
+4. New: Tab management with dropdown menu
+5. Optimise: Simplified address bar layout
+6. Optimise: Redesigned open source dialog with MIT license info
+7. Optimise: Edge-to-edge display
+8. Remove: Splash screen branding image
+
 ### v0.3.0_alpha
 Release date: 4 June 2021
 1. Optimise: Refactor the settings page by RecyclerView

@@ -14,7 +14,7 @@
     <string name="settings_homepage">主页</string>
     <string name="settings_language">语言</string>
     <string name="settings_about">关于</string>
-    <string name="settings_open_source">开源</string>
+    <string name="settings_open_source">开放源代码</string>
 
     <!-- Language settings -->
     <string name="language">语言</string>
@@ -39,9 +39,8 @@
     <string name="homepage_edit_error_invalid">错误：网址格式无效</string>
 
     <!-- Open Source dialog -->
-    <string name="open_source_title">关于开放源代码</string>
-    <string name="open_source_redirect">即将跳转到 github.com，是否继续？</string>
-    <string name="open_in_default_browser">在默认浏览器中打开</string>
+    <string name="open_source_title">开放源代码</string>
+    <string name="view_on_github">在 GitHub 上查看</string>
 
     <!-- Exit dialog -->
     <string name="exit_warning_title">警告</string>
@@ -49,6 +48,11 @@
 
     <!-- Address bar -->
     <string name="address_bar_hint">通过 %1$s 搜索或输入网址</string>
+
+    <!-- Menu items -->
+    <string name="menu_back">后退</string>
+    <string name="menu_forward">前进</string>
+    <string name="menu_home">主页</string>
 
     <!-- Tabs -->
     <string name="tab_1">标签页 1</string>

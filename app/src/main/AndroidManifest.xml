@@ -16,9 +16,6 @@
         android:localeConfig="@xml/locales_config"
         android:theme="@style/Theme.HydrogenBrowser"
         tools:targetApi="36">
-        <activity android:name=".settings.SettingsActivity" />
-        <activity android:name=".settings.AboutActivity" />
-        <activity android:name=".settings.LanguageActivity" />
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTask"
