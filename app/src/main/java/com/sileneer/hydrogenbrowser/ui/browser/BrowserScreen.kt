@@ -1,15 +1,7 @@
 package com.sileneer.hydrogenbrowser.ui.browser
 
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.net.http.SslError
 import android.view.ViewGroup
-import android.webkit.SslErrorHandler
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -53,7 +45,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +57,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -78,11 +68,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
 import com.sileneer.hydrogenbrowser.R
 
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun BrowserScreen(
     viewModel: BrowserViewModel,
@@ -94,8 +81,8 @@ fun BrowserScreen(
     val canGoBack by viewModel.canGoBack.collectAsStateWithLifecycle()
     val canGoForward by viewModel.canGoForward.collectAsStateWithLifecycle()
     val tabCount by viewModel.tabCount.collectAsStateWithLifecycle()
+    val activeTabId by viewModel.activeTabId.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     var showExitDialog by remember { mutableStateOf(false) }
@@ -105,78 +92,16 @@ fun BrowserScreen(
     var addressBarValue by remember { mutableStateOf(TextFieldValue("")) }
     val addressBarFocusRequester = remember { FocusRequester() }
 
+    // Active WebView reference, recomputed when active tab changes
+    val currentWebView = remember(activeTabId) {
+        viewModel.getActiveWebView()
+    }
+
     // Update address bar text when not focused
     LaunchedEffect(pageTitle, currentUrl, addressBarFocused) {
         if (!addressBarFocused) {
             val displayText = pageTitle.ifEmpty { currentUrl }
             addressBarValue = TextFieldValue(displayText)
-        }
-    }
-
-    val webView = remember {
-        WebView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            settings.javaScriptEnabled = true
-            settings.setSupportMultipleWindows(true)
-
-            try {
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, true)
-                }
-            } catch (_: UnsupportedOperationException) {
-                // Not supported in this environment
-            }
-
-            webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    viewModel.onPageStarted(url)
-                    viewModel.updateNavigation(
-                        canBack = view?.canGoBack() ?: false,
-                        canForward = view?.canGoForward() ?: false
-                    )
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    viewModel.onPageFinished(url, view?.title)
-                    viewModel.updateNavigation(
-                        canBack = view?.canGoBack() ?: false,
-                        canForward = view?.canGoForward() ?: false
-                    )
-                    viewModel.saveCurrentTabState(
-                        url = view?.url ?: "",
-                        title = view?.title ?: ""
-                    )
-                }
-
-                override fun onReceivedSslError(
-                    view: WebView?,
-                    handler: SslErrorHandler?,
-                    error: SslError?
-                ) {
-                    handler?.cancel()
-                }
-
-                override fun onReceivedError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    error: WebResourceError?
-                ) {
-                    if (request?.isForMainFrame == true) {
-                        viewModel.onError(error?.description?.toString())
-                    }
-                }
-            }
-
-            webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    viewModel.onProgressChanged(newProgress)
-                }
-            }
-
-            loadUrl(viewModel.getHomepage())
         }
     }
 
@@ -186,23 +111,17 @@ fun BrowserScreen(
         val intent = activity?.intent
         val url = intent?.data?.toString() ?: intent?.getStringExtra("url")
         if (url != null) {
-            webView.loadUrl(url)
+            viewModel.getActiveWebView()?.loadUrl(url)
             intent?.data = null
             intent?.removeExtra("url")
         }
     }
 
-    // Clean up WebView on dispose
-    DisposableEffect(Unit) {
-        onDispose {
-            webView.destroy()
-        }
-    }
-
     // Back handler
     BackHandler {
-        if (webView.canGoBack()) {
-            webView.goBack()
+        val activeWebView = viewModel.getActiveWebView()
+        if (activeWebView != null && activeWebView.canGoBack()) {
+            activeWebView.goBack()
         } else {
             showExitDialog = true
         }
@@ -286,7 +205,7 @@ fun BrowserScreen(
                                         onGo = {
                                             val input = addressBarValue.text.trim()
                                             val url = viewModel.resolveUrl(input)
-                                            webView.loadUrl(url)
+                                            viewModel.getActiveWebView()?.loadUrl(url)
                                             focusManager.clearFocus()
                                         }
                                     )
@@ -294,7 +213,11 @@ fun BrowserScreen(
                             }
                             // Refresh button inside address bar
                             IconButton(
-                                onClick = { webView.url?.let { webView.loadUrl(it) } },
+                                onClick = {
+                                    viewModel.getActiveWebView()?.let { wv ->
+                                        wv.url?.let { wv.loadUrl(it) }
+                                    }
+                                },
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
@@ -345,20 +268,7 @@ fun BrowserScreen(
                                     onClick = {
                                         showTabMenu = false
                                         if (index != viewModel.tabManager.activeTabIndex) {
-                                            viewModel.saveCurrentTabState(
-                                                url = webView.url ?: "",
-                                                title = webView.title ?: ""
-                                            )
-                                            viewModel.saveWebViewState(webView)
                                             viewModel.switchTab(index)
-                                            val activeTab = viewModel.tabManager.activeTab
-                                            if (!viewModel.restoreWebViewState(webView)) {
-                                                if (activeTab.url.isNotEmpty()) {
-                                                    webView.loadUrl(activeTab.url)
-                                                } else {
-                                                    webView.loadUrl(viewModel.getHomepage())
-                                                }
-                                            }
                                         }
                                     }
                                 )
@@ -368,13 +278,7 @@ fun BrowserScreen(
                                 text = { Text(stringResource(R.string.new_tab_action)) },
                                 onClick = {
                                     showTabMenu = false
-                                    viewModel.saveCurrentTabState(
-                                        url = webView.url ?: "",
-                                        title = webView.title ?: ""
-                                    )
-                                    viewModel.saveWebViewState(webView)
                                     viewModel.addTab()
-                                    webView.loadUrl(viewModel.getHomepage())
                                 }
                             )
                         }
@@ -404,7 +308,7 @@ fun BrowserScreen(
                                 IconButton(
                                     onClick = {
                                         showMoreMenu = false
-                                        webView.goBack()
+                                        viewModel.getActiveWebView()?.goBack()
                                     },
                                     enabled = canGoBack
                                 ) {
@@ -416,7 +320,7 @@ fun BrowserScreen(
                                 IconButton(
                                     onClick = {
                                         showMoreMenu = false
-                                        webView.goForward()
+                                        viewModel.getActiveWebView()?.goForward()
                                     },
                                     enabled = canGoForward
                                 ) {
@@ -428,7 +332,7 @@ fun BrowserScreen(
                                 IconButton(
                                     onClick = {
                                         showMoreMenu = false
-                                        webView.loadUrl(viewModel.getHomepage())
+                                        viewModel.getActiveWebView()?.loadUrl(viewModel.getHomepage())
                                     }
                                 ) {
                                     Icon(
@@ -468,9 +372,23 @@ fun BrowserScreen(
             )
         }
 
-        // WebView
+        // WebView container — swaps the displayed WebView when active tab changes
         AndroidView(
-            factory = { webView },
+            factory = { ctx ->
+                FrameLayout(ctx).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+            },
+            update = { container ->
+                if (currentWebView != null && (container.childCount == 0 || container.getChildAt(0) !== currentWebView)) {
+                    container.removeAllViews()
+                    (currentWebView.parent as? ViewGroup)?.removeView(currentWebView)
+                    container.addView(currentWebView)
+                }
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()

@@ -1,5 +1,7 @@
 package com.sileneer.hydrogenbrowser.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -24,7 +26,24 @@ fun HydrogenNavGraph() {
     // ViewModel scoped to activity so it survives navigation
     val browserViewModel: BrowserViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Routes.BROWSER) {
+    val slideDuration = 300
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.BROWSER,
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(slideDuration))
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(slideDuration))
+        },
+        popEnterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(slideDuration))
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(slideDuration))
+        }
+    ) {
         composable(Routes.BROWSER) {
             BrowserScreen(
                 viewModel = browserViewModel,
