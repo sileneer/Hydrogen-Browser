@@ -42,7 +42,6 @@ class SettingsScreenTest {
         composeTestRule.onNodeWithText("Homepage").assertIsDisplayed()
         composeTestRule.onNodeWithText("Language").assertIsDisplayed()
         composeTestRule.onNodeWithText("About").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Open Source").assertIsDisplayed()
     }
 
     @Test

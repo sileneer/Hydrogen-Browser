@@ -51,8 +51,11 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private val _tabCount = MutableStateFlow(1)
     val tabCount: StateFlow<Int> = _tabCount.asStateFlow()
 
+    private val _favicon = MutableStateFlow<Bitmap?>(null)
+    val favicon: StateFlow<Bitmap?> = _favicon.asStateFlow()
+
     init {
-        createWebViewForTab(tabManager.activeTab.id, getHomepage())
+        createWebViewForTab(tabManager.activeTab.id)
     }
 
     fun resolveUrl(input: String): String {
@@ -137,6 +140,12 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                         vm._loadingProgress.value = newProgress / 100f
                     }
                 }
+
+                override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+                    if (vm.tabManager.activeTab.id == tabId) {
+                        vm._favicon.value = icon
+                    }
+                }
             }
 
             if (initialUrl != null) {
@@ -149,14 +158,15 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     fun addTab() {
         val tab = tabManager.addTab()
-        createWebViewForTab(tab.id, getHomepage())
+        createWebViewForTab(tab.id)
         _activeTabId.value = tab.id
         _tabCount.value = tabManager.tabCount
         _currentUrl.value = ""
         _pageTitle.value = ""
         _canGoBack.value = false
         _canGoForward.value = false
-        _loadingProgress.value = 0f
+        _loadingProgress.value = -1f
+        _favicon.value = null
     }
 
     fun switchTab(index: Int) {
@@ -177,6 +187,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             _canGoBack.value = webView.canGoBack()
             _canGoForward.value = webView.canGoForward()
             _loadingProgress.value = -1f
+            _favicon.value = webView.favicon
         }
     }
 
@@ -197,6 +208,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                 _canGoBack.value = webView.canGoBack()
                 _canGoForward.value = webView.canGoForward()
                 _loadingProgress.value = -1f
+                _favicon.value = webView.favicon
             }
         }
         return closed

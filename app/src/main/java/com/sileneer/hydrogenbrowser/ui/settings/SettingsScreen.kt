@@ -1,6 +1,5 @@
 package com.sileneer.hydrogenbrowser.ui.settings
 
-import android.content.Intent
 import android.util.Patterns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -16,8 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.sileneer.hydrogenbrowser.R
 import com.sileneer.hydrogenbrowser.common.SearchEngine
@@ -67,7 +63,6 @@ fun SettingsScreen(
 
     var showSearchEngineSheet by remember { mutableStateOf(false) }
     var showHomepageSheet by remember { mutableStateOf(false) }
-    var showOpenSourceDialog by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -126,12 +121,6 @@ fun SettingsScreen(
                     icon = Icons.Default.Info,
                     title = stringResource(R.string.settings_about),
                     onClick = { navController.navigate(Routes.ABOUT) }
-                )
-                HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
-                SettingsListItem(
-                    icon = Icons.Outlined.Info,
-                    title = stringResource(R.string.settings_open_source),
-                    onClick = { showOpenSourceDialog = true }
                 )
             }
 
@@ -243,29 +232,6 @@ fun SettingsScreen(
         }
     }
 
-    // Open Source Dialog
-    if (showOpenSourceDialog) {
-        AlertDialog(
-            onDismissRequest = { showOpenSourceDialog = false },
-            title = { Text(stringResource(R.string.open_source_title)) },
-            text = { Text(stringResource(R.string.open_source_license)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showOpenSourceDialog = false
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.data = "https://github.com/sileneer/Hydrogen-Browser".toUri()
-                    context.startActivity(intent)
-                }) {
-                    Text(stringResource(R.string.view_on_github))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showOpenSourceDialog = false }) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
-        )
-    }
 }
 
 @Composable

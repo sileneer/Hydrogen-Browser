@@ -2,6 +2,8 @@ package com.sileneer.hydrogenbrowser.common
 
 import android.content.Context
 import androidx.core.content.edit
+import org.json.JSONArray
+import org.json.JSONObject
 
 class PreferencesRepository(context: Context) {
 
@@ -17,9 +19,41 @@ class PreferencesRepository(context: Context) {
 
     fun getSearchEngine(): SearchEngine = SearchEngine.fromIndex(searchEngineIndex)
 
+    fun getShortcuts(): List<Shortcut> {
+        val json = prefs.getString(KEY_SHORTCUTS, null) ?: return DEFAULT_SHORTCUTS
+        return try {
+            val array = JSONArray(json)
+            (0 until array.length()).map { i ->
+                val obj = array.getJSONObject(i)
+                Shortcut(obj.getString("name"), obj.getString("url"))
+            }
+        } catch (_: Exception) {
+            DEFAULT_SHORTCUTS
+        }
+    }
+
+    fun saveShortcuts(list: List<Shortcut>) {
+        val array = JSONArray()
+        list.forEach { shortcut ->
+            array.put(JSONObject().apply {
+                put("name", shortcut.name)
+                put("url", shortcut.url)
+            })
+        }
+        prefs.edit { putString(KEY_SHORTCUTS, array.toString()) }
+    }
+
     companion object {
         const val DEFAULT_HOMEPAGE = "www.google.com"
         private const val KEY_HOMEPAGE = "homepage"
         private const val KEY_SEARCH_ENGINE = "search engines"
+        private const val KEY_SHORTCUTS = "shortcuts"
+
+        val DEFAULT_SHORTCUTS = listOf(
+            Shortcut("Google", "https://www.google.com"),
+            Shortcut("YouTube", "https://www.youtube.com"),
+            Shortcut("Wikipedia", "https://www.wikipedia.org"),
+            Shortcut("GitHub", "https://github.com"),
+        )
     }
 }

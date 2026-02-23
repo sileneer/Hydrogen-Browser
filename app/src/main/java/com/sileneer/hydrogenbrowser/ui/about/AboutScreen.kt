@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,8 +21,13 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,6 +48,8 @@ fun AboutScreen(onBack: () -> Unit) {
     } catch (_: Exception) {
         ""
     }
+
+    var showOpenSourceDialog by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -111,8 +119,27 @@ fun AboutScreen(onBack: () -> Unit) {
                     ) {
                         Text(stringResource(R.string.view_on_github))
                     }
+                    Spacer(Modifier.height(8.dp))
+                    FilledTonalButton(
+                        onClick = { showOpenSourceDialog = true }
+                    ) {
+                        Text(stringResource(R.string.settings_open_source))
+                    }
                 }
             }
         }
+    }
+
+    if (showOpenSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showOpenSourceDialog = false },
+            title = { Text(stringResource(R.string.open_source_title)) },
+            text = { Text(stringResource(R.string.open_source_license)) },
+            confirmButton = {
+                TextButton(onClick = { showOpenSourceDialog = false }) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
+        )
     }
 }

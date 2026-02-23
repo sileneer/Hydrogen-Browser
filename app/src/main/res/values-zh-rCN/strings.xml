@@ -60,6 +60,20 @@
     <string name="new_tab_action">+ 新标签页</string>
     <string name="close_tab">关闭</string>
 
+    <!-- Address bar overlay -->
+    <string name="copy_link">复制链接</string>
+    <string name="share">分享</string>
+    <string name="edit_url">编辑网址</string>
+    <string name="link_copied">链接已复制</string>
+
+    <!-- New Tab Page shortcuts -->
+    <string name="add_shortcut">添加快捷方式</string>
+    <string name="edit_shortcut">编辑快捷方式</string>
+    <string name="shortcut_name">名称</string>
+    <string name="shortcut_url">网址</string>
+    <string name="delete">删除</string>
+    <string name="save">保存</string>
+
     <!-- WebView errors -->
     <string name="webview_error">错误：%1$s</string>
 </resources>

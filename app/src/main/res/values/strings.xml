@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Hydrogen Browser</string>
-    <string name="hydrogen_browser">Hydrogen Browser</string>
+    <string name="hydrogen_browser" translatable="false">Hydrogen Browser</string>
     <string name="copyright">Copyright \u00A9 2020\u20132026 Sileneer. All Rights Reserved.</string>
     <string name="version_format">Version: %1$s</string>
 
@@ -40,7 +40,7 @@
 
     <!-- Open Source dialog -->
     <string name="open_source_title">Open Source</string>
-    <string name="open_source_license">This project is licensed under the MIT License.\n\nCopyright (c) 2020–2026 Sileneer\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.</string>
+    <string name="open_source_license" translatable="false">This project is licensed under the MIT License.\n\nCopyright (c) 2020–2026 Sileneer\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.</string>
     <string name="view_on_github">View on GitHub</string>
 
     <!-- Exit dialog -->
@@ -60,6 +60,20 @@
     <string name="new_tab">New Tab</string>
     <string name="new_tab_action">+ New Tab</string>
     <string name="close_tab">Close</string>
+
+    <!-- Address bar overlay -->
+    <string name="copy_link">Copy link</string>
+    <string name="share">Share</string>
+    <string name="edit_url">Edit URL</string>
+    <string name="link_copied">Link copied</string>
+
+    <!-- New Tab Page shortcuts -->
+    <string name="add_shortcut">Add shortcut</string>
+    <string name="edit_shortcut">Edit shortcut</string>
+    <string name="shortcut_name">Name</string>
+    <string name="shortcut_url">URL</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
 
     <!-- WebView errors -->
     <string name="webview_error">Error: %1$s</string>
