@@ -8,6 +8,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,10 +17,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -64,6 +66,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -92,12 +95,10 @@ fun BrowserScreen(
     var addressBarValue by remember { mutableStateOf(TextFieldValue("")) }
     val addressBarFocusRequester = remember { FocusRequester() }
 
-    // Active WebView reference, recomputed when active tab changes
     val currentWebView = remember(activeTabId) {
         viewModel.getActiveWebView()
     }
 
-    // Update address bar text when not focused
     LaunchedEffect(pageTitle, currentUrl, addressBarFocused) {
         if (!addressBarFocused) {
             val displayText = pageTitle.ifEmpty { currentUrl }
@@ -105,7 +106,6 @@ fun BrowserScreen(
         }
     }
 
-    // Handle intent URLs
     val activity = LocalActivity.current as? ComponentActivity
     LaunchedEffect(activity?.intent) {
         val intent = activity?.intent
@@ -117,7 +117,6 @@ fun BrowserScreen(
         }
     }
 
-    // Back handler
     BackHandler {
         val activeWebView = viewModel.getActiveWebView()
         if (activeWebView != null && activeWebView.canGoBack()) {
@@ -128,251 +127,15 @@ fun BrowserScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Address bar — surface extends behind status bar
-        Surface(
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Column {
-                Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Search field with refresh trailing icon
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(36.dp)
-                            .padding(horizontal = 4.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 10.dp, end = 2.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Box(modifier = Modifier.weight(1f)) {
-                                if (addressBarValue.text.isEmpty() && !addressBarFocused) {
-                                    Text(
-                                        text = stringResource(
-                                            R.string.address_bar_hint,
-                                            viewModel.getSearchEngine().displayName
-                                        ),
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        ),
-                                        maxLines = 1
-                                    )
-                                }
-                                BasicTextField(
-                                    value = addressBarValue,
-                                    onValueChange = { addressBarValue = it },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .focusRequester(addressBarFocusRequester)
-                                        .onFocusChanged { focusState ->
-                                            addressBarFocused = focusState.isFocused
-                                            if (focusState.isFocused) {
-                                                val urlText = currentUrl
-                                                addressBarValue = TextFieldValue(
-                                                    text = urlText,
-                                                    selection = TextRange(0, urlText.length)
-                                                )
-                                            }
-                                        },
-                                    singleLine = true,
-                                    textStyle = TextStyle(
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    ),
-                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-                                    keyboardActions = KeyboardActions(
-                                        onGo = {
-                                            val input = addressBarValue.text.trim()
-                                            val url = viewModel.resolveUrl(input)
-                                            viewModel.getActiveWebView()?.loadUrl(url)
-                                            focusManager.clearFocus()
-                                        }
-                                    )
-                                )
-                            }
-                            // Refresh button inside address bar
-                            IconButton(
-                                onClick = {
-                                    viewModel.getActiveWebView()?.let { wv ->
-                                        wv.url?.let { wv.loadUrl(it) }
-                                    }
-                                },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+        // Status bar spacer
+        Spacer(
+            Modifier
+                .windowInsetsTopHeight(WindowInsets.statusBars)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+        )
 
-                    // Tab count button
-                    Box {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                .border(
-                                    width = 1.5.dp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    shape = RoundedCornerShape(6.dp)
-                                )
-                                .clickable { showTabMenu = true },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tabCount.toString(),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = showTabMenu,
-                            onDismissRequest = { showTabMenu = false }
-                        ) {
-                            viewModel.tabManager.tabs.forEachIndexed { index, tab ->
-                                val title = if (index == viewModel.tabManager.activeTabIndex) {
-                                    "\u25B6 ${tab.displayTitle}"
-                                } else {
-                                    tab.displayTitle
-                                }
-                                DropdownMenuItem(
-                                    text = { Text(title) },
-                                    onClick = {
-                                        showTabMenu = false
-                                        if (index != viewModel.tabManager.activeTabIndex) {
-                                            viewModel.switchTab(index)
-                                        }
-                                    }
-                                )
-                            }
-                            HorizontalDivider()
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.new_tab_action)) },
-                                onClick = {
-                                    showTabMenu = false
-                                    viewModel.addTab()
-                                }
-                            )
-                        }
-                    }
-
-                    // More menu button
-                    Box {
-                        IconButton(
-                            onClick = { showMoreMenu = true },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = showMoreMenu,
-                            onDismissRequest = { showMoreMenu = false }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(
-                                    onClick = {
-                                        showMoreMenu = false
-                                        viewModel.getActiveWebView()?.goBack()
-                                    },
-                                    enabled = canGoBack
-                                ) {
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = stringResource(R.string.menu_back)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        showMoreMenu = false
-                                        viewModel.getActiveWebView()?.goForward()
-                                    },
-                                    enabled = canGoForward
-                                ) {
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = stringResource(R.string.menu_forward)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        showMoreMenu = false
-                                        viewModel.getActiveWebView()?.loadUrl(viewModel.getHomepage())
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Default.Home,
-                                        contentDescription = stringResource(R.string.menu_home)
-                                    )
-                                }
-                            }
-                            HorizontalDivider()
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.settings)) },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Settings,
-                                        contentDescription = null
-                                    )
-                                },
-                                onClick = {
-                                    showMoreMenu = false
-                                    onNavigateToSettings()
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Progress bar
-        if (loadingProgress in 0f..1f) {
-            LinearProgressIndicator(
-                progress = { loadingProgress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp),
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-
-        // WebView container — swaps the displayed WebView when active tab changes
+        // WebView — full bleed
         AndroidView(
             factory = { ctx ->
                 FrameLayout(ctx).apply {
@@ -393,23 +156,202 @@ fun BrowserScreen(
                 .weight(1f)
                 .fillMaxWidth()
         )
+
+        // Progress bar
+        if (loadingProgress in 0f..1f) {
+            LinearProgressIndicator(
+                progress = { loadingProgress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp),
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+
+        // Bottom bar
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+            Column {
+                // Address pill
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .clickable { addressBarFocusRequester.requestFocus() },
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 14.dp, end = 4.dp, top = 10.dp, bottom = 10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 10.dp)
+                        ) {
+                            if (addressBarValue.text.isEmpty() && !addressBarFocused) {
+                                Text(
+                                    text = stringResource(
+                                        R.string.address_bar_hint,
+                                        viewModel.getSearchEngine().displayName
+                                    ),
+                                    style = TextStyle(
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            BasicTextField(
+                                value = addressBarValue,
+                                onValueChange = { addressBarValue = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .focusRequester(addressBarFocusRequester)
+                                    .onFocusChanged { focusState ->
+                                        addressBarFocused = focusState.isFocused
+                                        if (focusState.isFocused) {
+                                            val urlText = currentUrl
+                                            addressBarValue = TextFieldValue(
+                                                text = urlText,
+                                                selection = TextRange(0, urlText.length)
+                                            )
+                                        }
+                                    },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                                keyboardActions = KeyboardActions(
+                                    onGo = {
+                                        val input = addressBarValue.text.trim()
+                                        val url = viewModel.resolveUrl(input)
+                                        viewModel.getActiveWebView()?.loadUrl(url)
+                                        focusManager.clearFocus()
+                                    }
+                                )
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                viewModel.getActiveWebView()?.let { wv ->
+                                    wv.url?.let { wv.loadUrl(it) }
+                                }
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                // Navigation row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { viewModel.getActiveWebView()?.goBack() },
+                        enabled = canGoBack
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back), modifier = Modifier.size(22.dp))
+                    }
+                    IconButton(
+                        onClick = { viewModel.getActiveWebView()?.goForward() },
+                        enabled = canGoForward
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.menu_forward), modifier = Modifier.size(22.dp))
+                    }
+                    IconButton(
+                        onClick = { viewModel.getActiveWebView()?.loadUrl(viewModel.getHomepage()) }
+                    ) {
+                        Icon(Icons.Default.Home, contentDescription = stringResource(R.string.menu_home), modifier = Modifier.size(22.dp))
+                    }
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(8.dp))
+                                .clickable { showTabMenu = true },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = tabCount.toString(),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        DropdownMenu(expanded = showTabMenu, onDismissRequest = { showTabMenu = false }) {
+                            viewModel.tabManager.tabs.forEachIndexed { index, tab ->
+                                val title = if (index == viewModel.tabManager.activeTabIndex) "\u25B6 ${tab.displayTitle}" else tab.displayTitle
+                                DropdownMenuItem(
+                                    text = { Text(title) },
+                                    onClick = {
+                                        showTabMenu = false
+                                        if (index != viewModel.tabManager.activeTabIndex) viewModel.switchTab(index)
+                                    }
+                                )
+                            }
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.new_tab_action)) },
+                                onClick = { showTabMenu = false; viewModel.addTab() }
+                            )
+                        }
+                    }
+                    Box {
+                        IconButton(onClick = { showMoreMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = null, modifier = Modifier.size(22.dp))
+                        }
+                        DropdownMenu(expanded = showMoreMenu, onDismissRequest = { showMoreMenu = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.settings)) },
+                                leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                                onClick = { showMoreMenu = false; onNavigateToSettings() }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            }
+        }
     }
 
-    // Exit confirmation dialog
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
             title = { Text(stringResource(R.string.exit_warning_title)) },
             text = { Text(stringResource(R.string.exit_warning_message)) },
             confirmButton = {
-                TextButton(onClick = { activity?.finish() }) {
-                    Text(stringResource(R.string.yes))
-                }
+                TextButton(onClick = { activity?.finish() }) { Text(stringResource(R.string.yes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showExitDialog = false }) {
-                    Text(stringResource(R.string.no))
-                }
+                TextButton(onClick = { showExitDialog = false }) { Text(stringResource(R.string.no)) }
             }
         )
     }
