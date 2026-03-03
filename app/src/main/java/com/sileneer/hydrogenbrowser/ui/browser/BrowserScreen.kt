@@ -130,7 +130,7 @@ private val ContentCopyIcon: ImageVector by lazy {
     }.build()
 }
 
-private val HistoryIcon: ImageVector by lazy {
+internal val HistoryIcon: ImageVector by lazy {
     ImageVector.Builder(
         name = "History",
         defaultWidth = 24.dp,
