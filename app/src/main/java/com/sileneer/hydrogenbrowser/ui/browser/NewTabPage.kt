@@ -77,6 +77,7 @@ private fun firstLetterOf(url: String): String {
 fun NewTabPage(
     onSearch: () -> Unit,
     onNavigate: (String) -> Unit,
+    onHistoryClick: () -> Unit,
     prefs: PreferencesRepository,
     searchEngineDisplayName: String
 ) {
@@ -149,6 +150,34 @@ fun NewTabPage(
                 }
                 item {
                     AddShortcutTile(onClick = { showAddDialog = true })
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // History button
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onHistoryClick() }
+                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.foundation.layout.Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.history),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 

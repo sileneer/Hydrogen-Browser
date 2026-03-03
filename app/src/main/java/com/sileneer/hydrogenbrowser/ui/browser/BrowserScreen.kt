@@ -130,10 +130,48 @@ private val ContentCopyIcon: ImageVector by lazy {
     }.build()
 }
 
+private val HistoryIcon: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "History",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).apply {
+        path(fill = SolidColor(Color.Black)) {
+            moveTo(13f, 3f)
+            curveTo(8.03f, 3f, 4f, 7.03f, 4f, 12f)
+            horizontalLineTo(1f)
+            lineTo(4.89f, 15.89f)
+            lineTo(4.96f, 16.03f)
+            lineTo(9f, 12f)
+            horizontalLineTo(6f)
+            curveTo(6f, 8.13f, 9.13f, 5f, 13f, 5f)
+            curveTo(16.87f, 5f, 20f, 8.13f, 20f, 12f)
+            curveTo(20f, 15.87f, 16.87f, 19f, 13f, 19f)
+            curveTo(11.07f, 19f, 9.32f, 18.21f, 8.06f, 16.94f)
+            lineTo(6.64f, 18.36f)
+            curveTo(8.27f, 19.99f, 10.51f, 21f, 13f, 21f)
+            curveTo(17.97f, 21f, 22f, 16.97f, 22f, 12f)
+            curveTo(22f, 7.03f, 17.97f, 3f, 13f, 3f)
+            close()
+            moveTo(12f, 8f)
+            verticalLineTo(13f)
+            lineTo(16.28f, 15.54f)
+            lineTo(17f, 14.33f)
+            lineTo(13.5f, 12.25f)
+            verticalLineTo(8f)
+            horizontalLineTo(12f)
+            close()
+        }
+    }.build()
+}
+
 @Composable
 fun BrowserScreen(
     viewModel: BrowserViewModel,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToHistory: () -> Unit
 ) {
     val currentUrl by viewModel.currentUrl.collectAsStateWithLifecycle()
     val pageTitle by viewModel.pageTitle.collectAsStateWithLifecycle()
@@ -226,6 +264,7 @@ fun BrowserScreen(
                         onNavigate = { url ->
                             viewModel.getActiveWebView()?.loadUrl(url)
                         },
+                        onHistoryClick = onNavigateToHistory,
                         prefs = viewModel.prefs,
                         searchEngineDisplayName = viewModel.getSearchEngine().displayName
                     )
@@ -376,6 +415,11 @@ fun BrowserScreen(
                                 Icon(Icons.Default.MoreVert, contentDescription = null, modifier = Modifier.size(22.dp))
                             }
                             DropdownMenu(expanded = showMoreMenu, onDismissRequest = { showMoreMenu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.history)) },
+                                    leadingIcon = { Icon(HistoryIcon, contentDescription = null) },
+                                    onClick = { showMoreMenu = false; onNavigateToHistory() }
+                                )
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.settings)) },
                                     leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
