@@ -77,4 +77,16 @@
 
     <!-- WebView errors -->
     <string name="webview_error">Error: %1$s</string>
+
+    <!-- History -->
+    <string name="history">History</string>
+    <string name="search_history">Search history\u2026</string>
+    <string name="clear_all_history">Clear all history</string>
+    <string name="clear_history_title">Clear browsing history?</string>
+    <string name="clear_history_message">This will delete all your browsing history.</string>
+    <string name="history_deleted">History entry deleted</string>
+    <string name="undo">Undo</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="no_history">No browsing history</string>
 </resources>

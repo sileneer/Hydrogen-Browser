@@ -76,4 +76,16 @@
 
     <!-- WebView errors -->
     <string name="webview_error">错误：%1$s</string>
+
+    <!-- History -->
+    <string name="history">历史记录</string>
+    <string name="search_history">搜索历史记录\u2026</string>
+    <string name="clear_all_history">清除所有历史记录</string>
+    <string name="clear_history_title">清除浏览历史记录？</string>
+    <string name="clear_history_message">这将删除您所有的浏览历史记录。</string>
+    <string name="history_deleted">历史记录已删除</string>
+    <string name="undo">撤销</string>
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
+    <string name="no_history">没有浏览历史记录</string>
 </resources>
