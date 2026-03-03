@@ -12,13 +12,17 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.sileneer.hydrogenbrowser.common.PreferencesRepository
 import com.sileneer.hydrogenbrowser.common.SearchEngine
 import com.sileneer.hydrogenbrowser.common.UrlUtils
+import com.sileneer.hydrogenbrowser.data.HistoryRepository
+import com.sileneer.hydrogenbrowser.data.HydrogenDatabase
 import com.sileneer.hydrogenbrowser.tab.TabManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -26,6 +30,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
     val prefs = PreferencesRepository(application)
     val tabManager = TabManager()
+    private val historyRepository: HistoryRepository
 
     // One WebView per tab, keyed by tab id
     private val webViews = mutableMapOf<Int, WebView>()
@@ -55,6 +60,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     val favicon: StateFlow<Bitmap?> = _favicon.asStateFlow()
 
     init {
+        val db = HydrogenDatabase.getInstance(application)
+        historyRepository = HistoryRepository(db.historyDao())
         createWebViewForTab(tabManager.activeTab.id)
     }
 
@@ -67,6 +74,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     fun getSearchEngine(): SearchEngine = prefs.getSearchEngine()
 
     fun getActiveWebView(): WebView? = webViews[tabManager.activeTab.id]
+
+    fun getHistoryRepository(): HistoryRepository = historyRepository
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun createWebViewForTab(tabId: Int, initialUrl: String? = null): WebView {
@@ -102,6 +111,15 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                     val tab = vm.tabManager.tabs.find { it.id == tabId }
                     tab?.url = url ?: ""
                     tab?.title = view?.title ?: ""
+
+                    // Record in history
+                    val historyUrl = url ?: ""
+                    val historyTitle = view?.title ?: ""
+                    if (historyUrl.isNotEmpty() && historyUrl != "about:blank") {
+                        vm.viewModelScope.launch {
+                            vm.historyRepository.addEntry(historyUrl, historyTitle)
+                        }
+                    }
 
                     // Only update UI state if this is the active tab
                     if (vm.tabManager.activeTab.id == tabId) {
