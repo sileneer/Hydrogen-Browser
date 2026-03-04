@@ -1,12 +1,12 @@
-package com.sileneer.hydrogenbrowser.ui.browser
+package com.sileneer.hydrogenbrowser.ui.history
 
 import android.app.Application
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
+import com.sileneer.hydrogenbrowser.data.HydrogenDatabase
+import com.sileneer.hydrogenbrowser.data.HistoryRepository
 import com.sileneer.hydrogenbrowser.ui.theme.HydrogenBrowserTheme
 import org.junit.Rule
 import org.junit.Test
@@ -14,48 +14,48 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class BrowserScreenTest {
+class HistoryScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private fun createViewModel(): BrowserViewModel {
+    private fun createViewModel(): HistoryViewModel {
         val app = ApplicationProvider.getApplicationContext<Application>()
-        return BrowserViewModel(app)
+        val db = HydrogenDatabase.getInstance(app)
+        return HistoryViewModel(HistoryRepository(db.historyDao()))
     }
 
     @Test
-    fun tabCountButtonShowsCorrectCount() {
+    fun historyScreenDisplaysTitle() {
         val viewModel = createViewModel()
 
         composeTestRule.setContent {
             HydrogenBrowserTheme {
-                BrowserScreen(
+                HistoryScreen(
                     viewModel = viewModel,
-                    onNavigateToSettings = {},
-                    onNavigateToHistory = {}
+                    onBack = {},
+                    onNavigate = {}
                 )
             }
         }
 
-        composeTestRule.onNodeWithText("1").assertIsDisplayed()
+        composeTestRule.onNodeWithText("History").assertIsDisplayed()
     }
 
     @Test
-    fun tabCountUpdatesAfterAddingTab() {
+    fun emptyHistoryShowsMessage() {
         val viewModel = createViewModel()
 
         composeTestRule.setContent {
             HydrogenBrowserTheme {
-                BrowserScreen(
+                HistoryScreen(
                     viewModel = viewModel,
-                    onNavigateToSettings = {},
-                    onNavigateToHistory = {}
+                    onBack = {},
+                    onNavigate = {}
                 )
             }
         }
 
-        viewModel.addTab()
-        composeTestRule.onNodeWithText("2").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No browsing history").assertIsDisplayed()
     }
 }
