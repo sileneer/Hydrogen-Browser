@@ -16,6 +16,6 @@ class HistoryRepository(private val dao: HistoryDao) {
     suspend fun clearAll() = dao.deleteAll()
 
     suspend fun reInsert(entry: HistoryEntry) {
-        dao.insert(entry.copy(id = 0))
+        dao.upsert(entry)
     }
 }

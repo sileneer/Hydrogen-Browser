@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [HistoryEntry::class], version = 1)
+@Database(entities = [HistoryEntry::class], version = 1, exportSchema = false)
 abstract class HydrogenDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
 
@@ -19,7 +19,8 @@ abstract class HydrogenDatabase : RoomDatabase() {
                     context.applicationContext,
                     HydrogenDatabase::class.java,
                     "hydrogen_browser.db"
-                ).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
             }
         }
     }

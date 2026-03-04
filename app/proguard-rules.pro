@@ -6,12 +6,6 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
-# ImmersionBar
--keep class com.gyf.immersionbar.** { *; }
-
-# WebProgress
--keep class me.jingbin.progress.** { *; }
-
 # WebView JavaScript interfaces (if any are added in the future)
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;

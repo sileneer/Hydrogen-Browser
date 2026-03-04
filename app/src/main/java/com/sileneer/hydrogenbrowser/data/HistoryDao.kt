@@ -2,6 +2,7 @@ package com.sileneer.hydrogenbrowser.data
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -15,6 +16,9 @@ interface HistoryDao {
 
     @Insert
     suspend fun insert(entry: HistoryEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entry: HistoryEntry)
 
     @Query("DELETE FROM history_entries WHERE id = :id")
     suspend fun deleteById(id: Long)
