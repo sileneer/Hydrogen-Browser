@@ -25,4 +25,10 @@ interface HistoryDao {
 
     @Query("DELETE FROM history_entries")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM history_entries ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getMostRecent(): HistoryEntry?
+
+    @Query("UPDATE history_entries SET favicon = :favicon WHERE id = (SELECT id FROM history_entries WHERE url = :url ORDER BY timestamp DESC LIMIT 1)")
+    suspend fun updateFavicon(url: String, favicon: ByteArray)
 }

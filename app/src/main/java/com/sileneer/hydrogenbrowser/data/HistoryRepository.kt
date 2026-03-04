@@ -8,6 +8,8 @@ class HistoryRepository(private val dao: HistoryDao) {
     fun searchHistory(query: String): Flow<List<HistoryEntry>> = dao.searchHistory(query)
 
     suspend fun addEntry(url: String, title: String) {
+        val recent = dao.getMostRecent()
+        if (recent != null && recent.url == url) return
         dao.insert(HistoryEntry(url = url, title = title, timestamp = System.currentTimeMillis()))
     }
 
@@ -17,5 +19,9 @@ class HistoryRepository(private val dao: HistoryDao) {
 
     suspend fun reInsert(entry: HistoryEntry) {
         dao.upsert(entry)
+    }
+
+    suspend fun updateFavicon(url: String, favicon: ByteArray) {
+        dao.updateFavicon(url, favicon)
     }
 }

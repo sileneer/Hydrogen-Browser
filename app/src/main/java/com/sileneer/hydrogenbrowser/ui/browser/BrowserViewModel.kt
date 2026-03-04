@@ -21,6 +21,7 @@ import com.sileneer.hydrogenbrowser.common.UrlUtils
 import com.sileneer.hydrogenbrowser.data.HistoryRepository
 import com.sileneer.hydrogenbrowser.data.HydrogenDatabase
 import com.sileneer.hydrogenbrowser.tab.TabManager
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
@@ -162,6 +163,16 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                 override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                     if (vm.tabManager.activeTab.id == tabId) {
                         vm._favicon.value = icon
+                    }
+                    val url = view?.url
+                    if (icon != null && !url.isNullOrEmpty() && url != "about:blank") {
+                        val bytes = ByteArrayOutputStream().use { stream ->
+                            icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                            stream.toByteArray()
+                        }
+                        vm.viewModelScope.launch {
+                            vm.historyRepository.updateFavicon(url, bytes)
+                        }
                     }
                 }
             }
