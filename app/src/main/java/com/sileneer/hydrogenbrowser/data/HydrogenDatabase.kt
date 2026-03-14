@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [HistoryEntry::class], version = 2, exportSchema = false)
+@Database(entities = [HistoryEntry::class, BookmarkEntry::class], version = 3, exportSchema = false)
 abstract class HydrogenDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
+    abstract fun bookmarkDao(): BookmarkDao
 
     companion object {
         @Volatile
@@ -19,7 +20,7 @@ abstract class HydrogenDatabase : RoomDatabase() {
                     context.applicationContext,
                     HydrogenDatabase::class.java,
                     "hydrogen_browser.db"
-                ).fallbackToDestructiveMigration()
+                ).fallbackToDestructiveMigration(dropAllTables = true)
                     .build().also { INSTANCE = it }
             }
         }
