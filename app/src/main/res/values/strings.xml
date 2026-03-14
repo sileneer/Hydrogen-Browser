@@ -34,8 +34,7 @@
     <!-- Homepage dialog -->
     <string name="input_new_homepage_url_below">Input new homepage url below:</string>
     <string name="current_homepage">\nCurrent homepage: %1$s</string>
-    <string name="homepage_edit_success">Homepage edited successfully</string>
-    <string name="homepage_edit_error_empty">Error: Input URL is empty</string>
+<string name="homepage_edit_error_empty">Error: Input URL is empty</string>
     <string name="homepage_edit_error_invalid">Error: Invalid URL format</string>
 
     <!-- Open Source dialog -->
@@ -56,7 +55,6 @@
     <string name="menu_home">Home</string>
 
     <!-- Tabs -->
-    <string name="tab_1">Tab 1</string>
     <string name="new_tab">New Tab</string>
     <string name="new_tab_action">+ New Tab</string>
     <string name="close_tab">Close</string>
@@ -77,6 +75,18 @@
 
     <!-- WebView errors -->
     <string name="webview_error">Error: %1$s</string>
+    <string name="retry">Retry</string>
+
+    <!-- Find in page -->
+    <string name="find_in_page">Find in page</string>
+    <string name="find_previous">Previous match</string>
+    <string name="find_next">Next match</string>
+
+    <!-- Accessibility -->
+    <string name="more_options">More options</string>
+    <string name="refresh">Refresh</string>
+    <string name="clear_text">Clear text</string>
+    <string name="tab_count">Tab count</string>
 
     <!-- History -->
     <string name="history">History</string>
@@ -89,4 +99,22 @@
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
     <string name="no_history">No browsing history</string>
+
+    <!-- Bookmarks -->
+    <string name="bookmarks">Bookmarks</string>
+    <string name="bookmark_this_page">Bookmark this page</string>
+    <string name="remove_bookmark">Remove bookmark</string>
+    <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_removed">Bookmark removed</string>
+    <string name="edit_bookmark">Edit bookmark</string>
+    <string name="new_folder">New folder</string>
+    <string name="folder_name">Folder name</string>
+    <string name="move_to">Move to\u2026</string>
+    <string name="no_bookmarks">No bookmarks</string>
+    <string name="empty_folder">Empty folder</string>
+    <string name="edit">Edit</string>
+    <string name="delete_folder_title">Delete folder?</string>
+    <string name="delete_folder_message">This will delete the folder and all bookmarks inside it.</string>
+    <string name="search_bookmarks">Search bookmarks\u2026</string>
+    <string name="root_folder">Root</string>
 </resources>

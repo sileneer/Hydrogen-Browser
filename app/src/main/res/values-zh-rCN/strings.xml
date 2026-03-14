@@ -34,8 +34,7 @@
     <!-- Homepage dialog -->
     <string name="input_new_homepage_url_below">请在下方输入新的主页地址：</string>
     <string name="current_homepage">\n当前主页：%1$s</string>
-    <string name="homepage_edit_success">主页修改成功</string>
-    <string name="homepage_edit_error_empty">错误：输入的网址为空</string>
+<string name="homepage_edit_error_empty">错误：输入的网址为空</string>
     <string name="homepage_edit_error_invalid">错误：网址格式无效</string>
 
     <!-- Open Source dialog -->
@@ -55,7 +54,6 @@
     <string name="menu_home">主页</string>
 
     <!-- Tabs -->
-    <string name="tab_1">标签页 1</string>
     <string name="new_tab">新标签页</string>
     <string name="new_tab_action">+ 新标签页</string>
     <string name="close_tab">关闭</string>
@@ -76,6 +74,18 @@
 
     <!-- WebView errors -->
     <string name="webview_error">错误：%1$s</string>
+    <string name="retry">重试</string>
+
+    <!-- Find in page -->
+    <string name="find_in_page">在页面中查找</string>
+    <string name="find_previous">上一个匹配</string>
+    <string name="find_next">下一个匹配</string>
+
+    <!-- Accessibility -->
+    <string name="more_options">更多选项</string>
+    <string name="refresh">刷新</string>
+    <string name="clear_text">清除文本</string>
+    <string name="tab_count">标签页数量</string>
 
     <!-- History -->
     <string name="history">历史记录</string>
@@ -88,4 +98,22 @@
     <string name="today">今天</string>
     <string name="yesterday">昨天</string>
     <string name="no_history">没有浏览历史记录</string>
+
+    <!-- Bookmarks -->
+    <string name="bookmarks">书签</string>
+    <string name="bookmark_this_page">收藏此页面</string>
+    <string name="remove_bookmark">移除书签</string>
+    <string name="bookmark_added">已添加书签</string>
+    <string name="bookmark_removed">已移除书签</string>
+    <string name="edit_bookmark">编辑书签</string>
+    <string name="new_folder">新建文件夹</string>
+    <string name="folder_name">文件夹名称</string>
+    <string name="move_to">移动到\u2026</string>
+    <string name="no_bookmarks">暂无书签</string>
+    <string name="empty_folder">空文件夹</string>
+    <string name="edit">编辑</string>
+    <string name="delete_folder_title">删除文件夹？</string>
+    <string name="delete_folder_message">这将删除该文件夹及其中的所有书签。</string>
+    <string name="search_bookmarks">搜索书签\u2026</string>
+    <string name="root_folder">根目录</string>
 </resources>
