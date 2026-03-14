@@ -10,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.sileneer.hydrogenbrowser.ui.about.AboutScreen
+import com.sileneer.hydrogenbrowser.ui.bookmarks.BookmarkViewModel
+import com.sileneer.hydrogenbrowser.ui.bookmarks.BookmarksScreen
 import com.sileneer.hydrogenbrowser.ui.browser.BrowserScreen
 import com.sileneer.hydrogenbrowser.ui.browser.BrowserViewModel
 import com.sileneer.hydrogenbrowser.ui.history.HistoryScreen
@@ -23,6 +25,7 @@ object Routes {
     const val LANGUAGE = "language"
     const val ABOUT = "about"
     const val HISTORY = "history"
+    const val BOOKMARKS = "bookmarks"
 }
 
 @Composable
@@ -53,7 +56,8 @@ fun HydrogenNavGraph() {
             BrowserScreen(
                 viewModel = browserViewModel,
                 onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
-                onNavigateToHistory = { navController.navigate(Routes.HISTORY) }
+                onNavigateToHistory = { navController.navigate(Routes.HISTORY) },
+                onNavigateToBookmarks = { navController.navigate(Routes.BOOKMARKS) }
             )
         }
         composable(Routes.SETTINGS) {
@@ -79,6 +83,24 @@ fun HydrogenNavGraph() {
             )
             HistoryScreen(
                 viewModel = historyViewModel,
+                onBack = { navController.popBackStack() },
+                onNavigate = { url ->
+                    navController.popBackStack(Routes.BROWSER, inclusive = false)
+                    browserViewModel.getActiveWebView()?.loadUrl(url)
+                }
+            )
+        }
+        composable(Routes.BOOKMARKS) {
+            val bookmarkViewModel: BookmarkViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return BookmarkViewModel(browserViewModel.getBookmarkRepository()) as T
+                    }
+                }
+            )
+            BookmarksScreen(
+                viewModel = bookmarkViewModel,
                 onBack = { navController.popBackStack() },
                 onNavigate = { url ->
                     navController.popBackStack(Routes.BROWSER, inclusive = false)

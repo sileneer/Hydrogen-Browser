@@ -33,7 +33,8 @@ class BrowserScreenTest {
                 BrowserScreen(
                     viewModel = viewModel,
                     onNavigateToSettings = {},
-                    onNavigateToHistory = {}
+                    onNavigateToHistory = {},
+                    onNavigateToBookmarks = {}
                 )
             }
         }
@@ -50,7 +51,8 @@ class BrowserScreenTest {
                 BrowserScreen(
                     viewModel = viewModel,
                     onNavigateToSettings = {},
-                    onNavigateToHistory = {}
+                    onNavigateToHistory = {},
+                    onNavigateToBookmarks = {}
                 )
             }
         }

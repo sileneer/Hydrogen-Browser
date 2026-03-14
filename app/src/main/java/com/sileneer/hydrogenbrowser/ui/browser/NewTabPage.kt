@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,11 +79,12 @@ fun NewTabPage(
     onSearch: () -> Unit,
     onNavigate: (String) -> Unit,
     onHistoryClick: () -> Unit,
+    onBookmarksClick: () -> Unit,
     prefs: PreferencesRepository,
     searchEngineDisplayName: String
 ) {
     var shortcuts by remember { mutableStateOf(prefs.getShortcuts()) }
-    var editingIndex by remember { mutableStateOf(-1) }
+    var editingIndex by remember { mutableIntStateOf(-1) }
     var showAddDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -175,6 +177,32 @@ fun NewTabPage(
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.history),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Bookmarks button
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onBookmarksClick() }
+                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.foundation.layout.Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = BookmarkIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.bookmarks),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
