@@ -18,8 +18,15 @@ import androidx.webkit.WebViewFeature
 import com.sileneer.hydrogenbrowser.common.PreferencesRepository
 import com.sileneer.hydrogenbrowser.common.SearchEngine
 import com.sileneer.hydrogenbrowser.common.UrlUtils
+import com.sileneer.hydrogenbrowser.data.BookmarkRepository
 import com.sileneer.hydrogenbrowser.data.HistoryRepository
 import com.sileneer.hydrogenbrowser.data.HydrogenDatabase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import com.sileneer.hydrogenbrowser.tab.TabManager
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +39,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     val prefs = PreferencesRepository(application)
     val tabManager = TabManager()
     private val historyRepository: HistoryRepository
+    private val bookmarkRepository: BookmarkRepository
 
     // One WebView per tab, keyed by tab id
     private val webViews = mutableMapOf<Int, WebView>()
@@ -60,9 +68,16 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private val _favicon = MutableStateFlow<Bitmap?>(null)
     val favicon: StateFlow<Bitmap?> = _favicon.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _findInPageActive = MutableStateFlow(false)
+    val findInPageActive: StateFlow<Boolean> = _findInPageActive.asStateFlow()
+
     init {
         val db = HydrogenDatabase.getInstance(application)
         historyRepository = HistoryRepository(db.historyDao())
+        bookmarkRepository = BookmarkRepository(db.bookmarkDao())
         createWebViewForTab(tabManager.activeTab.id)
     }
 
@@ -77,6 +92,43 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     fun getActiveWebView(): WebView? = webViews[tabManager.activeTab.id]
 
     fun getHistoryRepository(): HistoryRepository = historyRepository
+
+    fun getBookmarkRepository(): BookmarkRepository = bookmarkRepository
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isCurrentPageBookmarked: StateFlow<Boolean> = _currentUrl
+        .flatMapLatest { url ->
+            if (url.isEmpty() || url == "about:blank") {
+                flowOf(false)
+            } else {
+                bookmarkRepository.observeBookmarkByUrl(url).map { it != null }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun addBookmark() {
+        val url = _currentUrl.value
+        val title = _pageTitle.value
+        if (url.isEmpty() || url == "about:blank") return
+        val faviconBytes = _favicon.value?.let { bmp ->
+            ByteArrayOutputStream().use { stream ->
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                stream.toByteArray()
+            }
+        }
+        viewModelScope.launch {
+            bookmarkRepository.addBookmark(title, url, faviconBytes)
+        }
+    }
+
+    fun removeBookmarkForCurrentPage() {
+        val url = _currentUrl.value
+        if (url.isEmpty()) return
+        viewModelScope.launch {
+            val bookmark = bookmarkRepository.getBookmarkByUrl(url)
+            bookmark?.let { bookmarkRepository.deleteEntry(it.id) }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun createWebViewForTab(tabId: Int, initialUrl: String? = null): WebView {
@@ -102,6 +154,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                     if (vm.tabManager.activeTab.id == tabId) {
                         vm._currentUrl.value = url ?: ""
                         vm._loadingProgress.value = 0f
+                        vm._errorMessage.value = null
                         vm._canGoBack.value = view?.canGoBack() ?: false
                         vm._canGoForward.value = view?.canGoForward() ?: false
                     }
@@ -148,6 +201,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                     if (request?.isForMainFrame == true) {
                         if (vm.tabManager.activeTab.id == tabId) {
                             vm._loadingProgress.value = -1f
+                            vm._errorMessage.value = error?.description?.toString()
                         }
                     }
                 }
@@ -164,14 +218,19 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                     if (vm.tabManager.activeTab.id == tabId) {
                         vm._favicon.value = icon
                     }
-                    val url = view?.url
-                    if (icon != null && !url.isNullOrEmpty() && url != "about:blank") {
-                        val bytes = ByteArrayOutputStream().use { stream ->
-                            icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                            stream.toByteArray()
-                        }
-                        vm.viewModelScope.launch {
-                            vm.historyRepository.updateFavicon(url, bytes)
+                    view?.url?.let { url ->
+                        if (icon != null && url.isNotEmpty() && url != "about:blank") {
+                            val bytes = ByteArrayOutputStream().use { stream ->
+                                icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                stream.toByteArray()
+                            }
+                            vm.viewModelScope.launch {
+                                try {
+                                    vm.historyRepository.updateFavicon(url, bytes)
+                                } catch (_: Exception) {
+                                    // Non-critical: favicon update failure shouldn't crash the app
+                                }
+                            }
                         }
                     }
                 }
@@ -182,6 +241,18 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             }
         }.also {
             webViews[tabId] = it
+        }
+    }
+
+    private fun syncUiStateFromWebView(webView: WebView?) {
+        if (webView != null) {
+            _currentUrl.value = webView.url ?: ""
+            _pageTitle.value = webView.title ?: ""
+            _canGoBack.value = webView.canGoBack()
+            _canGoForward.value = webView.canGoForward()
+            _loadingProgress.value = -1f
+            _favicon.value = webView.favicon
+            _errorMessage.value = null
         }
     }
 
@@ -196,6 +267,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         _canGoForward.value = false
         _loadingProgress.value = -1f
         _favicon.value = null
+        _errorMessage.value = null
+        dismissFindInPage()
     }
 
     fun switchTab(index: Int) {
@@ -203,6 +276,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
         // Pause current WebView
         webViews[tabManager.activeTab.id]?.onPause()
+        dismissFindInPage()
 
         tabManager.switchTo(index)
         _activeTabId.value = tabManager.activeTab.id
@@ -210,14 +284,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         // Resume new WebView and update UI state
         val webView = webViews[tabManager.activeTab.id]
         webView?.onResume()
-        if (webView != null) {
-            _currentUrl.value = webView.url ?: ""
-            _pageTitle.value = webView.title ?: ""
-            _canGoBack.value = webView.canGoBack()
-            _canGoForward.value = webView.canGoForward()
-            _loadingProgress.value = -1f
-            _favicon.value = webView.favicon
-        }
+        syncUiStateFromWebView(webView)
     }
 
     fun closeTab(index: Int): Boolean {
@@ -228,19 +295,34 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             webViews.remove(tabToClose.id)
             _activeTabId.value = tabManager.activeTab.id
             _tabCount.value = tabManager.tabCount
+            dismissFindInPage()
 
             val webView = webViews[tabManager.activeTab.id]
             webView?.onResume()
-            if (webView != null) {
-                _currentUrl.value = webView.url ?: ""
-                _pageTitle.value = webView.title ?: ""
-                _canGoBack.value = webView.canGoBack()
-                _canGoForward.value = webView.canGoForward()
-                _loadingProgress.value = -1f
-                _favicon.value = webView.favicon
-            }
+            syncUiStateFromWebView(webView)
         }
         return closed
+    }
+
+    fun findInPage(query: String) {
+        getActiveWebView()?.findAllAsync(query)
+    }
+
+    fun findNext(forward: Boolean) {
+        getActiveWebView()?.findNext(forward)
+    }
+
+    fun showFindInPage() {
+        _findInPageActive.value = true
+    }
+
+    fun dismissFindInPage() {
+        _findInPageActive.value = false
+        getActiveWebView()?.clearMatches()
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 
     override fun onCleared() {
