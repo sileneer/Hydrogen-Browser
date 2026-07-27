@@ -54,8 +54,16 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Claude Code
+# AI assistant files — never tracked
 .claude/
+.remember/
+.cursor/
+.aider*
+.codex/
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+docs/superpowers/
 
 # Misc project files
 findings.md
