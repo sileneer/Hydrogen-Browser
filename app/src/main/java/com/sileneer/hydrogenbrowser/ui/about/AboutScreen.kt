@@ -62,7 +62,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.menu_back)
                         )
                     }
                 },

@@ -20,7 +20,7 @@ data class HistoryEntry(
                 url == other.url &&
                 title == other.title &&
                 timestamp == other.timestamp &&
-                favicon.contentEquals(other.favicon)
+                (favicon?.contentEquals(other.favicon) ?: (other.favicon == null))
     }
 
     override fun hashCode(): Int {

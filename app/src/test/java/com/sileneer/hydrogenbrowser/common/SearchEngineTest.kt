@@ -14,9 +14,10 @@ class SearchEngineTest {
         assertEquals(SearchEngine.DUCKDUCKGO, SearchEngine.fromIndex(3))
     }
 
-    @Test(expected = IndexOutOfBoundsException::class)
-    fun `fromIndex throws on invalid index`() {
-        SearchEngine.fromIndex(99)
+    @Test
+    fun `fromIndex returns GOOGLE for invalid index`() {
+        assertEquals(SearchEngine.GOOGLE, SearchEngine.fromIndex(99))
+        assertEquals(SearchEngine.GOOGLE, SearchEngine.fromIndex(-1))
     }
 
     @Test

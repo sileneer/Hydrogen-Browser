@@ -36,4 +36,40 @@ class UrlUtilsTest {
             assertEquals("http://test", result)
         }
     }
+
+    // simplifyForDisplay tests
+    @Test
+    fun `simplifyForDisplay strips https`() {
+        assertEquals("example.com", UrlUtils.simplifyForDisplay("https://example.com"))
+    }
+
+    @Test
+    fun `simplifyForDisplay strips http`() {
+        assertEquals("example.com", UrlUtils.simplifyForDisplay("http://example.com"))
+    }
+
+    @Test
+    fun `simplifyForDisplay strips www prefix`() {
+        assertEquals("example.com", UrlUtils.simplifyForDisplay("https://www.example.com"))
+    }
+
+    @Test
+    fun `simplifyForDisplay strips m prefix`() {
+        assertEquals("example.com", UrlUtils.simplifyForDisplay("https://m.example.com"))
+    }
+
+    @Test
+    fun `simplifyForDisplay strips trailing slash`() {
+        assertEquals("example.com", UrlUtils.simplifyForDisplay("https://example.com/"))
+    }
+
+    @Test
+    fun `simplifyForDisplay keeps path after slash`() {
+        assertEquals("example.com/page", UrlUtils.simplifyForDisplay("https://example.com/page"))
+    }
+
+    @Test
+    fun `simplifyForDisplay handles empty string`() {
+        assertEquals("", UrlUtils.simplifyForDisplay(""))
+    }
 }

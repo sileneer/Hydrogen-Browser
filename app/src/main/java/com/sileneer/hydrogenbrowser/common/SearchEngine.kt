@@ -9,6 +9,6 @@ enum class SearchEngine(val displayName: String, val searchUrl: String) {
     companion object {
         val displayNames: Array<String> = entries.map { it.displayName }.toTypedArray()
 
-        fun fromIndex(index: Int): SearchEngine = entries[index]
+        fun fromIndex(index: Int): SearchEngine = entries.getOrElse(index) { GOOGLE }
     }
 }
