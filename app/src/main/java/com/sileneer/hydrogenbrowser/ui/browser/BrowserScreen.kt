@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.view.ViewGroup
+import android.webkit.WebBackForwardList
 import android.widget.FrameLayout
 import android.widget.Toast
 import android.webkit.WebView
@@ -15,7 +16,9 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,11 +56,15 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -78,6 +85,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -91,6 +99,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -118,19 +128,21 @@ fun BrowserScreen(
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val findInPageActive by viewModel.findInPageActive.collectAsStateWithLifecycle()
     val isBookmarked by viewModel.isCurrentPageBookmarked.collectAsStateWithLifecycle()
+    val showTabGrid by viewModel.showTabGrid.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
 
     var showExitDialog by remember { mutableStateOf(false) }
-    var showTabMenu by remember { mutableStateOf(false) }
     var showMoreMenu by remember { mutableStateOf(false) }
     var addressBarFocused by remember { mutableStateOf(false) }
     var overlayTextValue by remember { mutableStateOf(TextFieldValue("")) }
     val overlayFocusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
-    val bookmarkAddedLabel = stringResource(R.string.bookmark_added)
+    val bookmarkAddedToLabel = stringResource(R.string.bookmark_added_to)
     val bookmarkRemovedLabel = stringResource(R.string.bookmark_removed)
+    val changeFolderLabel = stringResource(R.string.change_folder)
     val scope = rememberCoroutineScope()
+    var movingBookmarkId by remember { mutableStateOf<Long?>(null) }
 
     val currentWebView = remember(activeTabId) {
         viewModel.getActiveWebView()
@@ -151,6 +163,7 @@ fun BrowserScreen(
 
     BackHandler {
         when {
+            showTabGrid -> viewModel.dismissTabGrid()
             findInPageActive -> viewModel.dismissFindInPage()
             addressBarFocused -> addressBarFocused = false
             else -> {
@@ -258,7 +271,6 @@ fun BrowserScreen(
                 canGoBack = canGoBack,
                 canGoForward = canGoForward,
                 tabCount = tabCount,
-                showTabMenu = showTabMenu,
                 showMoreMenu = showMoreMenu,
                 onAddressBarClick = {
                     overlayTextValue = TextFieldValue("")
@@ -271,13 +283,22 @@ fun BrowserScreen(
                 },
                 onGoBack = { viewModel.getActiveWebView()?.goBack() },
                 onGoForward = { viewModel.getActiveWebView()?.goForward() },
-                onGoHome = { viewModel.getActiveWebView()?.loadUrl(viewModel.getHomepage()) },
-                onTabMenuToggle = { showTabMenu = it },
+                backForwardList = currentWebView?.copyBackForwardList(),
+                onGoToHistoryIndex = { index ->
+                    val wv = viewModel.getActiveWebView() ?: return@BottomBar
+                    val list = wv.copyBackForwardList()
+                    val steps = index - list.currentIndex
+                    wv.goBackOrForward(steps)
+                },
+                onGoHome = {
+                    if (viewModel.prefs.homeButtonGoesToStartPage) {
+                        viewModel.goToStartPage()
+                    } else {
+                        viewModel.getActiveWebView()?.loadUrl(viewModel.getHomepage())
+                    }
+                },
+                onTabGridOpen = { viewModel.openTabGrid() },
                 onMoreMenuToggle = { showMoreMenu = it },
-                tabs = viewModel.tabManager.tabs,
-                activeTabIndex = viewModel.tabManager.activeTabIndex,
-                onSwitchTab = { viewModel.switchTab(it) },
-                onAddTab = { viewModel.addTab() },
                 onNavigateToHistory = onNavigateToHistory,
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToBookmarks = onNavigateToBookmarks,
@@ -290,12 +311,50 @@ fun BrowserScreen(
                             snackbarHostState.showSnackbar(bookmarkRemovedLabel, duration = SnackbarDuration.Short)
                         }
                     } else {
-                        viewModel.addBookmark()
-                        scope.launch {
-                            snackbarHostState.showSnackbar(bookmarkAddedLabel, duration = SnackbarDuration.Short)
+                        val rootLabel = context.getString(R.string.root_folder)
+                        viewModel.addBookmark { id, folderName ->
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = bookmarkAddedToLabel.format(folderName ?: rootLabel),
+                                    actionLabel = changeFolderLabel,
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    movingBookmarkId = id
+                                }
+                            }
                         }
                     }
-                }
+                },
+                activeTabIndex = viewModel.tabManager.activeTabIndex,
+                tabTotalCount = viewModel.tabManager.tabCount,
+                onSwipeToTab = { viewModel.switchTab(it) }
+            )
+        }
+
+        // Tab grid overlay
+        if (showTabGrid) {
+            TabGridOverlay(
+                // Snapshot copy: tabManager.tabs is a live MutableList of non-observable Tabs,
+                // so passing it directly lets Compose skip the grid after a close.
+                tabs = viewModel.tabManager.tabs.toList(),
+                activeTabId = activeTabId,
+                onSelectTab = { tabId ->
+                    val idx = viewModel.tabManager.indexOfId(tabId)
+                    if (idx >= 0) {
+                        viewModel.switchTab(idx)
+                        viewModel.dismissTabGrid()
+                    }
+                },
+                onCloseTab = { tabId ->
+                    val idx = viewModel.tabManager.indexOfId(tabId)
+                    if (idx >= 0) viewModel.closeTab(idx)
+                },
+                onAddTab = {
+                    viewModel.addTab()
+                    viewModel.dismissTabGrid()
+                },
+                onDismiss = { viewModel.dismissTabGrid() }
             )
         }
 
@@ -303,31 +362,81 @@ fun BrowserScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
 
-        // ---- Address bar overlay ----
-        if (addressBarFocused) {
-            AddressBarOverlay(
-                currentUrl = currentUrl,
-                pageTitle = pageTitle,
-                favicon = favicon,
-                searchEngineDisplayName = viewModel.getSearchEngine().displayName,
-                overlayTextValue = overlayTextValue,
-                overlayFocusRequester = overlayFocusRequester,
-                onOverlayTextChange = { overlayTextValue = it },
-                onDismiss = { addressBarFocused = false },
-                onNavigate = { input ->
-                    val url = viewModel.resolveUrl(input)
-                    viewModel.getActiveWebView()?.loadUrl(url)
-                    addressBarFocused = false
-                },
-                onEditUrl = {
-                    overlayTextValue = TextFieldValue(
-                        text = currentUrl,
-                        selection = TextRange(currentUrl.length)
-                    )
+    // Move bookmark to folder dialog
+    movingBookmarkId?.let { bookmarkId ->
+        val allFolders by viewModel.allFolders.collectAsStateWithLifecycle()
+        AlertDialog(
+            onDismissRequest = { movingBookmarkId = null },
+            title = { Text(stringResource(R.string.move_to)) },
+            text = {
+                LazyColumn {
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.moveBookmark(bookmarkId, null)
+                                    movingBookmarkId = null
+                                }
+                                .padding(vertical = 12.dp, horizontal = 8.dp)
+                        ) {
+                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text(stringResource(R.string.root_folder))
+                        }
+                    }
+                    items(allFolders, key = { it.id }) { folder ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.moveBookmark(bookmarkId, folder.id)
+                                    movingBookmarkId = null
+                                }
+                                .padding(vertical = 12.dp, horizontal = 8.dp)
+                        ) {
+                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text(folder.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
                 }
-            )
-        }
+            },
+            confirmButton = {
+                TextButton(onClick = { movingBookmarkId = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // ---- Address bar overlay ---- (AddressBarOverlay is itself a fillMaxSize Box)
+    if (addressBarFocused) {
+        AddressBarOverlay(
+            currentUrl = currentUrl,
+            pageTitle = pageTitle,
+            favicon = favicon,
+            searchEngineDisplayName = viewModel.getSearchEngine().displayName,
+            overlayTextValue = overlayTextValue,
+            overlayFocusRequester = overlayFocusRequester,
+            onOverlayTextChange = { overlayTextValue = it },
+            onDismiss = { addressBarFocused = false },
+            onNavigate = { input ->
+                val url = viewModel.resolveUrl(input)
+                viewModel.getActiveWebView()?.loadUrl(url)
+                addressBarFocused = false
+            },
+            onEditUrl = {
+                overlayTextValue = TextFieldValue(
+                    text = currentUrl,
+                    selection = TextRange(currentUrl.length)
+                )
+            }
+        )
     }
 
     if (showExitDialog) {
@@ -447,88 +556,82 @@ private fun BottomBar(
     canGoBack: Boolean,
     canGoForward: Boolean,
     tabCount: Int,
-    showTabMenu: Boolean,
     showMoreMenu: Boolean,
     onAddressBarClick: () -> Unit,
     onRefresh: () -> Unit,
     onGoBack: () -> Unit,
     onGoForward: () -> Unit,
+    backForwardList: WebBackForwardList?,
+    onGoToHistoryIndex: (Int) -> Unit,
     onGoHome: () -> Unit,
-    onTabMenuToggle: (Boolean) -> Unit,
+    onTabGridOpen: () -> Unit,
     onMoreMenuToggle: (Boolean) -> Unit,
-    tabs: List<com.sileneer.hydrogenbrowser.tab.Tab>,
-    activeTabIndex: Int,
-    onSwitchTab: (Int) -> Unit,
-    onAddTab: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToBookmarks: () -> Unit,
     onFindInPage: () -> Unit,
     isBookmarked: Boolean,
-    onToggleBookmark: () -> Unit
+    onToggleBookmark: () -> Unit,
+    activeTabIndex: Int,
+    tabTotalCount: Int,
+    onSwipeToTab: (Int) -> Unit
 ) {
+    val density = LocalDensity.current
+    val minDragPx = with(density) { 50.dp.toPx() }
+
     Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
         Column {
-            // Address pill
-            AddressPill(
-                currentUrl = currentUrl,
-                searchEngineDisplayName = searchEngineDisplayName,
-                onClick = onAddressBarClick,
-                onRefresh = onRefresh
-            )
-
-            // Navigation row
+            // Address pill + tab counter + more button (with swipe-to-switch)
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onGoBack, enabled = canGoBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.menu_back), modifier = Modifier.size(22.dp))
-                }
-                IconButton(onClick = onGoForward, enabled = canGoForward) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.menu_forward), modifier = Modifier.size(22.dp))
-                }
-                IconButton(onClick = onGoHome) {
-                    Icon(Icons.Default.Home, contentDescription = stringResource(R.string.menu_home), modifier = Modifier.size(22.dp))
-                }
-                // Tab counter button
-                Box {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(8.dp))
-                            .clickable { onTabMenuToggle(true) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = tabCount.toString(),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    DropdownMenu(expanded = showTabMenu, onDismissRequest = { onTabMenuToggle(false) }) {
-                        tabs.forEachIndexed { index, tab ->
-                            val title = if (index == activeTabIndex) "\u25B6 ${tab.displayTitle}" else tab.displayTitle
-                            DropdownMenuItem(
-                                text = { Text(title) },
-                                onClick = {
-                                    onTabMenuToggle(false)
-                                    if (index != activeTabIndex) onSwitchTab(index)
+                    .pointerInput(activeTabIndex, tabTotalCount) {
+                        // dragAmount is a single pointer-move delta, so it must be accumulated;
+                        // `switched` latches one tab hop per gesture.
+                        var dragTotal = 0f
+                        var switched = false
+                        detectHorizontalDragGestures(
+                            onDragStart = { dragTotal = 0f; switched = false },
+                            onDragEnd = { dragTotal = 0f; switched = false },
+                            onDragCancel = { dragTotal = 0f; switched = false }
+                        ) { _, dragAmount ->
+                            dragTotal += dragAmount
+                            if (!switched) {
+                                if (dragTotal < -minDragPx && activeTabIndex < tabTotalCount - 1) {
+                                    switched = true
+                                    onSwipeToTab(activeTabIndex + 1)
+                                } else if (dragTotal > minDragPx && activeTabIndex > 0) {
+                                    switched = true
+                                    onSwipeToTab(activeTabIndex - 1)
                                 }
-                            )
+                            }
                         }
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.new_tab_action)) },
-                            onClick = { onTabMenuToggle(false); onAddTab() }
-                        )
                     }
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    AddressPill(
+                        currentUrl = currentUrl,
+                        searchEngineDisplayName = searchEngineDisplayName,
+                        onClick = onAddressBarClick,
+                        onRefresh = onRefresh
+                    )
+                }
+                // Tab counter button — opens tab grid
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(8.dp))
+                        .clickable { onTabGridOpen() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = tabCount.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 // More menu button
                 Box {
@@ -536,11 +639,46 @@ private fun BottomBar(
                         Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options), modifier = Modifier.size(22.dp))
                     }
                     DropdownMenu(expanded = showMoreMenu, onDismissRequest = { onMoreMenuToggle(false) }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(if (isBookmarked) R.string.remove_bookmark else R.string.bookmark_this_page)) },
-                            leadingIcon = { Icon(if (isBookmarked) BookmarkFilledIcon else BookmarkIcon, contentDescription = null) },
-                            onClick = { onMoreMenuToggle(false); onToggleBookmark() }
-                        )
+                        // Navigation row: back, forward, home, bookmark
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            NavHistoryButton(
+                                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.menu_back),
+                                enabled = canGoBack,
+                                onClick = { onMoreMenuToggle(false); onGoBack() },
+                                backForwardList = backForwardList,
+                                isBack = true,
+                                onGoToIndex = { onMoreMenuToggle(false); onGoToHistoryIndex(it) }
+                            )
+                            NavHistoryButton(
+                                icon = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = stringResource(R.string.menu_forward),
+                                enabled = canGoForward,
+                                onClick = { onMoreMenuToggle(false); onGoForward() },
+                                backForwardList = backForwardList,
+                                isBack = false,
+                                onGoToIndex = { onMoreMenuToggle(false); onGoToHistoryIndex(it) }
+                            )
+                            IconButton(onClick = { onMoreMenuToggle(false); onGoHome() }) {
+                                Icon(Icons.Default.Home, contentDescription = stringResource(R.string.menu_home), modifier = Modifier.size(22.dp))
+                            }
+                            IconButton(onClick = { onMoreMenuToggle(false); onToggleBookmark() }) {
+                                Icon(
+                                    if (isBookmarked) BookmarkFilledIcon else BookmarkIcon,
+                                    contentDescription = stringResource(
+                                        if (isBookmarked) R.string.remove_bookmark else R.string.bookmark_this_page
+                                    ),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                        HorizontalDivider()
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.bookmarks)) },
                             leadingIcon = { Icon(BookmarkIcon, contentDescription = null) },
@@ -566,6 +704,71 @@ private fun BottomBar(
             }
 
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.ime.union(WindowInsets.navigationBars)))
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NavHistoryButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    backForwardList: WebBackForwardList?,
+    isBack: Boolean,
+    onGoToIndex: (Int) -> Unit
+) {
+    var showHistory by remember { mutableStateOf(false) }
+    val alpha = if (enabled) 1f else 0.38f
+
+    Box {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .combinedClickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    onLongClick = { showHistory = true }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = contentDescription,
+                modifier = Modifier
+                    .size(22.dp)
+                    .alpha(alpha)
+            )
+        }
+
+        DropdownMenu(
+            expanded = showHistory,
+            onDismissRequest = { showHistory = false }
+        ) {
+            backForwardList?.let { list ->
+                val currentIndex = list.currentIndex
+                val items = if (isBack) {
+                    (currentIndex - 1 downTo 0).map { i -> i to list.getItemAtIndex(i) }
+                } else {
+                    ((currentIndex + 1) until list.size).map { i -> i to list.getItemAtIndex(i) }
+                }
+                items.forEach { (index, item) ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = item.title?.takeIf { it.isNotBlank() } ?: item.url,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        onClick = {
+                            onGoToIndex(index)
+                            showHistory = false
+                        }
+                    )
+                }
+            }
         }
     }
 }

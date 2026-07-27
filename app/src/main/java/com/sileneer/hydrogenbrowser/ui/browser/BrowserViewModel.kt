@@ -13,6 +13,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.core.graphics.applyCanvas
+import androidx.core.graphics.createBitmap
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.sileneer.hydrogenbrowser.common.PreferencesRepository
@@ -74,6 +76,9 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     private val _findInPageActive = MutableStateFlow(false)
     val findInPageActive: StateFlow<Boolean> = _findInPageActive.asStateFlow()
 
+    private val _showTabGrid = MutableStateFlow(false)
+    val showTabGrid: StateFlow<Boolean> = _showTabGrid.asStateFlow()
+
     init {
         val db = HydrogenDatabase.getInstance(application)
         historyRepository = HistoryRepository(db.historyDao())
@@ -106,7 +111,12 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    fun addBookmark() {
+    val allFolders: StateFlow<List<com.sileneer.hydrogenbrowser.data.BookmarkEntry>> =
+        bookmarkRepository.getAllFolders()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Adds bookmark to the last-used folder. Returns the id and folder name via [onAdded]. */
+    fun addBookmark(onAdded: (id: Long, folderName: String?) -> Unit = { _, _ -> }) {
         val url = _currentUrl.value
         val title = _pageTitle.value
         if (url.isEmpty() || url == "about:blank") return
@@ -116,8 +126,18 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                 stream.toByteArray()
             }
         }
+        val folderId = prefs.lastBookmarkFolderId
         viewModelScope.launch {
-            bookmarkRepository.addBookmark(title, url, faviconBytes)
+            val entry = bookmarkRepository.addBookmark(title, url, faviconBytes, folderId)
+            val folderName = folderId?.let { bookmarkRepository.getById(it)?.title }
+            onAdded(entry.id, folderName)
+        }
+    }
+
+    fun moveBookmark(bookmarkId: Long, newParentId: Long?) {
+        prefs.lastBookmarkFolderId = newParentId
+        viewModelScope.launch {
+            bookmarkRepository.moveEntry(bookmarkId, newParentId)
         }
     }
 
@@ -152,7 +172,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
             webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     if (vm.tabManager.activeTab.id == tabId) {
-                        vm._currentUrl.value = url ?: ""
+                        vm._currentUrl.value = vm.displayUrl(url)
                         vm._loadingProgress.value = 0f
                         vm._errorMessage.value = null
                         vm._canGoBack.value = view?.canGoBack() ?: false
@@ -177,8 +197,8 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
 
                     // Only update UI state if this is the active tab
                     if (vm.tabManager.activeTab.id == tabId) {
-                        vm._currentUrl.value = url ?: ""
-                        vm._pageTitle.value = view?.title ?: ""
+                        vm._currentUrl.value = vm.displayUrl(url)
+                        vm._pageTitle.value = if (url == "about:blank") "" else view?.title ?: ""
                         vm._loadingProgress.value = -1f
                         vm._canGoBack.value = view?.canGoBack() ?: false
                         vm._canGoForward.value = view?.canGoForward() ?: false
@@ -244,10 +264,17 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    /**
+     * about:blank *is* the start page, so it must surface as an empty URL — BrowserScreen
+     * gates the New Tab Page on `currentUrl.isEmpty()`.
+     */
+    private fun displayUrl(url: String?): String = if (url == "about:blank") "" else url ?: ""
+
     private fun syncUiStateFromWebView(webView: WebView?) {
         if (webView != null) {
-            _currentUrl.value = webView.url ?: ""
-            _pageTitle.value = webView.title ?: ""
+            val url = webView.url
+            _currentUrl.value = displayUrl(url)
+            _pageTitle.value = if (url == "about:blank") "" else webView.title ?: ""
             _canGoBack.value = webView.canGoBack()
             _canGoForward.value = webView.canGoForward()
             _loadingProgress.value = -1f
@@ -271,8 +298,43 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         dismissFindInPage()
     }
 
+    fun goToStartPage() {
+        getActiveWebView()?.loadUrl("about:blank")
+        _currentUrl.value = ""
+        _pageTitle.value = ""
+        _canGoBack.value = false
+        _canGoForward.value = false
+        _loadingProgress.value = -1f
+        _favicon.value = null
+        _errorMessage.value = null
+        dismissFindInPage()
+    }
+
+    fun captureActiveTabThumbnail() {
+        val webView = getActiveWebView() ?: return
+        if (webView.width <= 0 || webView.height <= 0) return
+        val ratio = 360f / webView.width
+        tabManager.activeTab.thumbnail =
+            createBitmap(360, (webView.height * ratio).toInt().coerceAtLeast(1)).applyCanvas {
+                scale(ratio, ratio)
+                webView.draw(this)
+            }
+    }
+
+    fun openTabGrid() {
+        captureActiveTabThumbnail()
+        _showTabGrid.value = true
+    }
+
+    fun dismissTabGrid() {
+        _showTabGrid.value = false
+    }
+
     fun switchTab(index: Int) {
         if (index == tabManager.activeTabIndex) return
+
+        // Capture thumbnail before switching away
+        captureActiveTabThumbnail()
 
         // Pause current WebView
         webViews[tabManager.activeTab.id]?.onPause()
@@ -287,21 +349,30 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
         syncUiStateFromWebView(webView)
     }
 
-    fun closeTab(index: Int): Boolean {
+    fun closeTab(index: Int) {
         val tabToClose = tabManager.tabs[index]
-        val closed = tabManager.closeTab(index)
-        if (closed) {
-            webViews[tabToClose.id]?.destroy()
-            webViews.remove(tabToClose.id)
-            _activeTabId.value = tabManager.activeTab.id
-            _tabCount.value = tabManager.tabCount
-            dismissFindInPage()
+        val newTab = tabManager.closeTab(index)
 
-            val webView = webViews[tabManager.activeTab.id]
-            webView?.onResume()
-            syncUiStateFromWebView(webView)
+        // Detach first: closing the *active* tab destroys a WebView still parented to the
+        // AndroidView container, and a draw pass before the swap would hit a dead WebView.
+        webViews[tabToClose.id]?.let { wv ->
+            (wv.parent as? ViewGroup)?.removeView(wv)
+            wv.destroy()
         }
-        return closed
+        webViews.remove(tabToClose.id)
+
+        if (newTab != null) {
+            // Last tab was closed, a new blank tab was auto-created
+            createWebViewForTab(newTab.id)
+        }
+
+        _activeTabId.value = tabManager.activeTab.id
+        _tabCount.value = tabManager.tabCount
+        dismissFindInPage()
+
+        val webView = webViews[tabManager.activeTab.id]
+        webView?.onResume()
+        syncUiStateFromWebView(webView)
     }
 
     fun findInPage(query: String) {

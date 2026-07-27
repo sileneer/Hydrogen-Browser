@@ -12,6 +12,8 @@
     <!-- Settings items -->
     <string name="settings_search_engine">Search Engine</string>
     <string name="settings_homepage">Homepage</string>
+    <string name="homepage_start_page">Start page</string>
+    <string name="homepage_custom_url">Custom URL</string>
     <string name="settings_language">Language</string>
     <string name="settings_about">About</string>
     <string name="settings_open_source">Open Source</string>
@@ -58,6 +60,7 @@
     <string name="new_tab">New Tab</string>
     <string name="new_tab_action">+ New Tab</string>
     <string name="close_tab">Close</string>
+    <string name="tabs_title">Tabs</string>
 
     <!-- Address bar overlay -->
     <string name="copy_link">Copy link</string>
@@ -105,6 +108,8 @@
     <string name="bookmark_this_page">Bookmark this page</string>
     <string name="remove_bookmark">Remove bookmark</string>
     <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_added_to">Saved to %1$s</string>
+    <string name="change_folder">Change folder</string>
     <string name="bookmark_removed">Bookmark removed</string>
     <string name="edit_bookmark">Edit bookmark</string>
     <string name="new_folder">New folder</string>

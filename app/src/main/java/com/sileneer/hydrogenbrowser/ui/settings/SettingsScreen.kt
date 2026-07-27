@@ -75,7 +75,7 @@ fun SettingsScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.menu_back)
                         )
                     }
                 },
@@ -102,7 +102,9 @@ fun SettingsScreen(
                 SettingsListItem(
                     icon = Icons.Default.Home,
                     title = stringResource(R.string.settings_homepage),
-                    subtitle = prefs.homepage,
+                    subtitle = if (prefs.homeButtonGoesToStartPage)
+                        stringResource(R.string.homepage_start_page)
+                    else prefs.homepage,
                     onClick = { showHomepageSheet = true }
                 )
                 HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
@@ -172,6 +174,7 @@ fun SettingsScreen(
 
     // Homepage Bottom Sheet
     if (showHomepageSheet) {
+        var useStartPage by remember { mutableStateOf(prefs.homeButtonGoesToStartPage) }
         var homepageInput by remember { mutableStateOf("") }
         var errorMessage by remember { mutableStateOf<String?>(null) }
         val sheetState = rememberModalBottomSheetState()
@@ -188,39 +191,54 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.current_homepage, prefs.homepage),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedTextField(
-                    value = homepageInput,
-                    onValueChange = {
-                        homepageInput = it
-                        errorMessage = null
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.homepage_start_page)) },
+                    leadingContent = {
+                        RadioButton(
+                            selected = useStartPage,
+                            onClick = { useStartPage = true }
+                        )
                     },
-                    label = { Text(stringResource(R.string.input_new_homepage_url_below)) },
-                    singleLine = true,
-                    isError = errorMessage != null,
-                    supportingText = errorMessage?.let { { Text(it) } },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
+                    modifier = Modifier.clickable { useStartPage = true }
                 )
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.homepage_custom_url)) },
+                    leadingContent = {
+                        RadioButton(
+                            selected = !useStartPage,
+                            onClick = { useStartPage = false }
+                        )
+                    },
+                    modifier = Modifier.clickable { useStartPage = false }
+                )
+                if (!useStartPage) {
+                    OutlinedTextField(
+                        value = homepageInput,
+                        onValueChange = {
+                            homepageInput = it
+                            errorMessage = null
+                        },
+                        label = { Text(stringResource(R.string.input_new_homepage_url_below)) },
+                        placeholder = { Text(prefs.homepage) },
+                        singleLine = true,
+                        isError = errorMessage != null,
+                        supportingText = errorMessage?.let { { Text(it) } },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
                 TextButton(
                     onClick = {
-                        when {
-                            homepageInput.isEmpty() -> {
-                                errorMessage = context.getString(R.string.homepage_edit_error_empty)
-                            }
-                            !Patterns.WEB_URL.matcher(homepageInput).matches() -> {
-                                errorMessage = context.getString(R.string.homepage_edit_error_invalid)
-                            }
-                            else -> {
-                                prefs.homepage = homepageInput
-                                showHomepageSheet = false
-                            }
+                        // Empty input in custom mode keeps the previously saved URL.
+                        val newUrl = homepageInput.takeIf { !useStartPage && it.isNotEmpty() }
+                        if (newUrl != null && !Patterns.WEB_URL.matcher(newUrl).matches()) {
+                            errorMessage = context.getString(R.string.homepage_edit_error_invalid)
+                        } else {
+                            newUrl?.let { prefs.homepage = it }
+                            prefs.homeButtonGoesToStartPage = useStartPage
+                            showHomepageSheet = false
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -276,3 +294,4 @@ private fun SettingsListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
     )
 }
+

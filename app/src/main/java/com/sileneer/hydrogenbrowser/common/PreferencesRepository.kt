@@ -27,7 +27,7 @@ class PreferencesRepository(context: Context) {
                 val obj = array.getJSONObject(i)
                 Shortcut(obj.getString("name"), obj.getString("url"))
             }
-        } catch (_: Exception) {
+        } catch (_: org.json.JSONException) {
             DEFAULT_SHORTCUTS
         }
     }
@@ -43,11 +43,29 @@ class PreferencesRepository(context: Context) {
         prefs.edit { putString(KEY_SHORTCUTS, array.toString()) }
     }
 
+    /**
+     * New installs get the start page; upgraders who already saved a custom homepage keep it,
+     * since this key is absent for them and defaulting to true would silently ignore their URL.
+     */
+    var homeButtonGoesToStartPage: Boolean
+        get() = prefs.getBoolean(KEY_HOME_START_PAGE, !prefs.contains(KEY_HOMEPAGE))
+        set(value) = prefs.edit { putBoolean(KEY_HOME_START_PAGE, value) }
+
+    /** Last folder id used when bookmarking; null = root. */
+    var lastBookmarkFolderId: Long?
+        get() {
+            val v = prefs.getLong(KEY_LAST_BOOKMARK_FOLDER, -1L)
+            return if (v == -1L) null else v
+        }
+        set(value) = prefs.edit { putLong(KEY_LAST_BOOKMARK_FOLDER, value ?: -1L) }
+
     companion object {
         const val DEFAULT_HOMEPAGE = "www.google.com"
         private const val KEY_HOMEPAGE = "homepage"
         private const val KEY_SEARCH_ENGINE = "search engines"
         private const val KEY_SHORTCUTS = "shortcuts"
+        private const val KEY_HOME_START_PAGE = "home_button_start_page"
+        private const val KEY_LAST_BOOKMARK_FOLDER = "last_bookmark_folder"
 
         val DEFAULT_SHORTCUTS = listOf(
             Shortcut("Google", "https://www.google.com"),

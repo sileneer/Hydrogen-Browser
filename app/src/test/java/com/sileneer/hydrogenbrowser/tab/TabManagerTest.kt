@@ -1,8 +1,8 @@
 package com.sileneer.hydrogenbrowser.tab
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
@@ -48,15 +48,33 @@ class TabManagerTest {
         assertEquals(3, tabManager.tabCount)
 
         tabManager.switchTo(2)
-        assertTrue(tabManager.closeTab(2))
+        val newTab = tabManager.closeTab(2)
+        assertNull(newTab)
         assertEquals(2, tabManager.tabCount)
         assertEquals(1, tabManager.activeTabIndex)
     }
 
     @Test
-    fun `cannot close last tab`() {
-        assertFalse(tabManager.closeTab(0))
+    fun `closing a tab before the active one keeps the same tab active`() {
+        tabManager.addTab()
+        tabManager.addTab()
+        tabManager.switchTo(1)
+        val stillActive = tabManager.activeTab.id
+
+        tabManager.closeTab(0)
+
+        assertEquals(2, tabManager.tabCount)
+        assertEquals(0, tabManager.activeTabIndex)
+        assertEquals(stillActive, tabManager.activeTab.id)
+    }
+
+    @Test
+    fun `closing last tab auto-creates new tab`() {
+        val newTab = tabManager.closeTab(0)
+        assertNotNull(newTab)
         assertEquals(1, tabManager.tabCount)
+        assertEquals(0, tabManager.activeTabIndex)
+        assertEquals("", tabManager.activeTab.url)
     }
 
     @Test

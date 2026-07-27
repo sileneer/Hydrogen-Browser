@@ -75,6 +75,8 @@ class SettingsScreenTest {
         }
 
         composeTestRule.onNodeWithText("Homepage").performClick()
+        // Sheet defaults to "Start page"; the URL field only appears under "Custom URL"
+        composeTestRule.onNodeWithText("Custom URL").performClick()
         composeTestRule.onNodeWithText("Input new homepage url below:").assertIsDisplayed()
     }
 }

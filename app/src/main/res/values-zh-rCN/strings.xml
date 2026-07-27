@@ -12,6 +12,8 @@
     <!-- Settings items -->
     <string name="settings_search_engine">搜索引擎</string>
     <string name="settings_homepage">主页</string>
+    <string name="homepage_start_page">起始页</string>
+    <string name="homepage_custom_url">自定义网址</string>
     <string name="settings_language">语言</string>
     <string name="settings_about">关于</string>
     <string name="settings_open_source">开放源代码</string>
@@ -57,6 +59,7 @@
     <string name="new_tab">新标签页</string>
     <string name="new_tab_action">+ 新标签页</string>
     <string name="close_tab">关闭</string>
+    <string name="tabs_title">标签页</string>
 
     <!-- Address bar overlay -->
     <string name="copy_link">复制链接</string>
@@ -104,6 +107,8 @@
     <string name="bookmark_this_page">收藏此页面</string>
     <string name="remove_bookmark">移除书签</string>
     <string name="bookmark_added">已添加书签</string>
+    <string name="bookmark_added_to">已保存到 %1$s</string>
+    <string name="change_folder">更改文件夹</string>
     <string name="bookmark_removed">已移除书签</string>
     <string name="edit_bookmark">编辑书签</string>
     <string name="new_folder">新建文件夹</string>

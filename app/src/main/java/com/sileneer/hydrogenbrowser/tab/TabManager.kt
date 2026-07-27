@@ -25,14 +25,25 @@ class TabManager {
         _activeTabIndex = index
     }
 
-    fun closeTab(index: Int): Boolean {
-        if (_tabs.size <= 1) return false
-        _tabs.removeAt(index)
-        if (_activeTabIndex >= _tabs.size) {
+    fun closeTab(index: Int): Tab? {
+        val closedTab = _tabs.removeAt(index)
+        if (_tabs.isEmpty()) {
+            val newTab = Tab(id = nextId++)
+            _tabs.add(newTab)
+            _activeTabIndex = 0
+            return newTab
+        }
+        // Closing a tab before the active one shifts it down; closing the active one
+        // keeps the index (the next tab slides in) and only needs clamping at the end.
+        if (index < _activeTabIndex) {
+            _activeTabIndex--
+        } else if (_activeTabIndex >= _tabs.size) {
             _activeTabIndex = _tabs.size - 1
         }
-        return true
+        return null
     }
+
+    fun indexOfId(tabId: Int): Int = _tabs.indexOfFirst { it.id == tabId }
 
     fun updateActiveTab(url: String, title: String) {
         activeTab.url = url
