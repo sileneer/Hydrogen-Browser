@@ -1,0 +1,24 @@
+# Normalize line endings: stored LF in the repo, native in the working tree.
+* text=auto
+
+# Scripts whose endings are not negotiable
+gradlew        text eol=lf
+*.sh           text eol=lf
+gradlew.bat    text eol=crlf
+*.bat          text eol=crlf
+*.cmd          text eol=crlf
+
+# Binary — never touch, never diff as text
+*.jar          binary
+*.keystore     binary
+*.jks          binary
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.webp         binary
+*.gif          binary
+*.ico          binary
+*.ttf          binary
+*.otf          binary
+*.apk          binary
+*.aab          binary
