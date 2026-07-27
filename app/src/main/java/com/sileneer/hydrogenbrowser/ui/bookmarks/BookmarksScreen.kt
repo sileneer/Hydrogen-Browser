@@ -436,7 +436,7 @@ fun BookmarksScreen(
                         }
                     }
                     items(
-                        allFolders.filter { it.id != entry.id && it.parentId != entry.id },
+                        allFolders.filter { it.id != entry.id && it.id !in allFolders.descendantsOf(entry.id) },
                         key = { it.id }
                     ) { folder ->
                         Row(
@@ -463,6 +463,21 @@ fun BookmarksScreen(
             }
         )
     }
+}
+
+/**
+ * Ids under [rootId] at any depth. Offering one as a move target is a dead end:
+ * BookmarkRepository.moveEntry detects the cycle and returns without updating, silently.
+ */
+private fun List<BookmarkEntry>.descendantsOf(rootId: Long): Set<Long> {
+    val byParent = groupBy { it.parentId }
+    val found = mutableSetOf<Long>()
+    val pending = ArrayDeque(byParent[rootId].orEmpty())
+    while (pending.isNotEmpty()) {
+        val folder = pending.removeFirst()
+        if (found.add(folder.id)) pending.addAll(byParent[folder.id].orEmpty())
+    }
+    return found
 }
 
 @OptIn(ExperimentalFoundationApi::class)

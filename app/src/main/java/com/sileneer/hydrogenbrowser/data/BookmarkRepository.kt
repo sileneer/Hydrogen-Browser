@@ -16,18 +16,26 @@ class BookmarkRepository(private val dao: BookmarkDao) {
 
     suspend fun getById(id: Long): BookmarkEntry? = dao.getById(id)
 
+    /**
+     * A folder id can outlive the folder: it is cached in prefs and held by undo buffers,
+     * and parentId is a real FK, so an insert against a deleted folder throws. Fall back to root.
+     */
+    private suspend fun existingParentOrRoot(parentId: Long?): Long? =
+        parentId?.takeIf { dao.getById(it) != null }
+
     suspend fun addBookmark(
         title: String,
         url: String,
         favicon: ByteArray? = null,
         parentId: Long? = null
     ): BookmarkEntry {
-        val maxPos = dao.getMaxPosition(parentId) ?: -1
+        val safeParentId = existingParentOrRoot(parentId)
+        val maxPos = dao.getMaxPosition(safeParentId) ?: -1
         val entry = BookmarkEntry(
             title = title,
             url = url,
             isFolder = false,
-            parentId = parentId,
+            parentId = safeParentId,
             position = maxPos + 1,
             favicon = favicon,
             createdAt = System.currentTimeMillis()
@@ -37,12 +45,13 @@ class BookmarkRepository(private val dao: BookmarkDao) {
     }
 
     suspend fun createFolder(name: String, parentId: Long? = null): BookmarkEntry {
-        val maxPos = dao.getMaxPosition(parentId) ?: -1
+        val safeParentId = existingParentOrRoot(parentId)
+        val maxPos = dao.getMaxPosition(safeParentId) ?: -1
         val entry = BookmarkEntry(
             title = name,
             url = null,
             isFolder = true,
-            parentId = parentId,
+            parentId = safeParentId,
             position = maxPos + 1,
             createdAt = System.currentTimeMillis()
         )
@@ -69,6 +78,7 @@ class BookmarkRepository(private val dao: BookmarkDao) {
     suspend fun deleteEntry(id: Long) = dao.deleteById(id)
 
     suspend fun reInsert(entry: BookmarkEntry) {
-        dao.upsert(entry)
+        val safeParentId = existingParentOrRoot(entry.parentId)
+        dao.upsert(if (safeParentId == entry.parentId) entry else entry.copy(parentId = safeParentId))
     }
 }
