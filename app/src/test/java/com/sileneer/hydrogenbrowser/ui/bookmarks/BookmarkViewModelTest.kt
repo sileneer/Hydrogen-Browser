@@ -58,7 +58,6 @@ class BookmarkViewModelTest {
     @Test
     fun `initial state is root folder`() {
         assertNull(viewModel.currentFolder.value)
-        assertTrue(viewModel.folderPath.value.isEmpty())
     }
 
     @Test
@@ -71,7 +70,6 @@ class BookmarkViewModelTest {
     fun `navigateToFolder updates current folder and path`() = runTest {
         viewModel.navigateToFolder(folder)
         assertEquals(folder, viewModel.currentFolder.value)
-        assertEquals(listOf(folder), viewModel.folderPath.value)
         val items = viewModel.children.first()
         assertEquals(folderChildren, items)
     }
@@ -82,7 +80,6 @@ class BookmarkViewModelTest {
         val result = viewModel.navigateUp()
         assertTrue(result)
         assertNull(viewModel.currentFolder.value)
-        assertTrue(viewModel.folderPath.value.isEmpty())
     }
 
     @Test

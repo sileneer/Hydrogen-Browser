@@ -7,8 +7,6 @@ enum class SearchEngine(val displayName: String, val searchUrl: String) {
     DUCKDUCKGO("DuckDuckGo", "https://duckduckgo.com/?q=");
 
     companion object {
-        val displayNames: Array<String> = entries.map { it.displayName }.toTypedArray()
-
         fun fromIndex(index: Int): SearchEngine = entries.getOrElse(index) { GOOGLE }
     }
 }

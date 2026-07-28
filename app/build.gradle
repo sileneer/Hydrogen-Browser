@@ -7,7 +7,7 @@ def getVersionCode() {
         versionProps.load(new FileInputStream(versionFile))
         def versionCode = versionProps['VERSION_CODE'].toInteger()
         def runTasks = gradle.startParameter.taskNames
-        if (':app:assembleRelease' in runTasks || 'task1' in runTasks || 'task2' in runTasks) {
+        if (':app:assembleRelease' in runTasks) {
             versionProps['VERSION_CODE'] = (++versionCode).toString()
             versionProps.store(versionFile.newWriter(), null)
         }
@@ -49,8 +49,6 @@ android {
         targetSdk 37
         versionCode = currentVersionCode
         versionName = currentVersionName
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -61,7 +59,6 @@ android {
         }
     }
     buildFeatures {
-        buildConfig = true
         compose = true
     }
     compileOptions {
@@ -90,15 +87,12 @@ dependencies {
     def composeBom = platform('androidx.compose:compose-bom:2026.03.00')
     implementation composeBom
     testImplementation composeBom
-    androidTestImplementation composeBom
 
     // Compose
     implementation 'androidx.compose.material3:material3'
     // Not transitive from material3 since 1.4 — Icons.* fails to resolve without it
     implementation 'androidx.compose.material:material-icons-core'
     implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     // Navigation Compose
@@ -130,9 +124,6 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.16.1'
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'androidx.compose.ui:ui-test-junit4'
-
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
     // Room
     def room_version = '2.8.4'

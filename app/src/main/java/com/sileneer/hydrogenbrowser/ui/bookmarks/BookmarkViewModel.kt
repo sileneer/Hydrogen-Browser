@@ -20,7 +20,6 @@ class BookmarkViewModel(private val repository: BookmarkRepository) : ViewModel(
     val currentFolder: StateFlow<BookmarkEntry?> = _currentFolder.asStateFlow()
 
     private val _folderPath = MutableStateFlow<List<BookmarkEntry>>(emptyList())
-    val folderPath: StateFlow<List<BookmarkEntry>> = _folderPath.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()

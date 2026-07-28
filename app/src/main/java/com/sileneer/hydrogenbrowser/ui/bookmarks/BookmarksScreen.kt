@@ -1,13 +1,9 @@
 package com.sileneer.hydrogenbrowser.ui.bookmarks
 
-import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,8 +37,6 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -56,17 +48,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sileneer.hydrogenbrowser.R
 import com.sileneer.hydrogenbrowser.data.BookmarkEntry
-import com.sileneer.hydrogenbrowser.ui.browser.BookmarkIcon
-import com.sileneer.hydrogenbrowser.ui.browser.FolderIcon
+import com.sileneer.hydrogenbrowser.ui.common.FaviconBadge
+import com.sileneer.hydrogenbrowser.ui.common.ListSearchField
+import com.sileneer.hydrogenbrowser.ui.common.MoveToFolderDialog
+import com.sileneer.hydrogenbrowser.ui.common.SwipeDeleteBackground
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,6 +87,20 @@ fun BookmarksScreen(
     val deletedLabel = stringResource(R.string.bookmark_removed)
     val undoLabel = stringResource(R.string.undo)
 
+    val deleteWithUndo: (BookmarkEntry) -> Unit = { entry ->
+        viewModel.deleteEntry(entry)
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = deletedLabel,
+                actionLabel = undoLabel,
+                duration = SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.undoDelete(entry)
+            }
+        }
+    }
+
     BackHandler {
         when {
             isSearching -> viewModel.toggleSearch()
@@ -119,7 +126,10 @@ fun BookmarksScreen(
                         Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search_bookmarks))
                     }
                     IconButton(onClick = { showNewFolderDialog = true }) {
-                        Icon(FolderIcon, contentDescription = stringResource(R.string.new_folder))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_folder),
+                            contentDescription = stringResource(R.string.new_folder)
+                        )
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -132,30 +142,11 @@ fun BookmarksScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search bar
             AnimatedVisibility(visible = isSearching) {
-                TextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChanged(it) },
-                    placeholder = { Text(stringResource(R.string.search_bookmarks)) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
-                                Icon(Icons.Default.Close, contentDescription = null)
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                ListSearchField(
+                    query = searchQuery,
+                    onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                    placeholder = stringResource(R.string.search_bookmarks)
                 )
             }
 
@@ -175,88 +166,35 @@ fun BookmarksScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(children, key = { it.id }) { entry ->
-                        if (entry.isFolder) {
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { dismissValue ->
-                                    if (dismissValue != SwipeToDismissBoxValue.Settled) {
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { dismissValue ->
+                                when {
+                                    dismissValue == SwipeToDismissBoxValue.Settled -> false
+                                    // A folder takes its children with it, so it asks first
+                                    // and the row stays put until the dialog is answered.
+                                    entry.isFolder -> {
                                         deletingFolder = entry
+                                        false
                                     }
-                                    false
-                                }
-                            )
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                backgroundContent = {
-                                    val color by animateColorAsState(
-                                        targetValue = when (dismissState.targetValue) {
-                                            SwipeToDismissBoxValue.Settled -> Color.Transparent
-                                            else -> MaterialTheme.colorScheme.errorContainer
-                                        },
-                                        label = "swipe-bg"
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(color)
-                                            .padding(horizontal = 20.dp),
-                                        contentAlignment = Alignment.CenterEnd
-                                    ) {
-                                        Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
-                                    }
-                                }
-                            ) {
-                                BookmarkItem(
-                                    entry = entry,
-                                    onClick = { viewModel.navigateToFolder(entry) },
-                                    onLongClick = { contextMenuEntry = entry }
-                                )
-                            }
-                        } else {
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { dismissValue ->
-                                    if (dismissValue != SwipeToDismissBoxValue.Settled) {
-                                        viewModel.deleteEntry(entry)
-                                        scope.launch {
-                                            val result = snackbarHostState.showSnackbar(
-                                                message = deletedLabel,
-                                                actionLabel = undoLabel,
-                                                duration = SnackbarDuration.Short
-                                            )
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                viewModel.undoDelete(entry)
-                                            }
-                                        }
+                                    else -> {
+                                        deleteWithUndo(entry)
                                         true
-                                    } else false
-                                }
-                            )
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                backgroundContent = {
-                                    val color by animateColorAsState(
-                                        targetValue = when (dismissState.targetValue) {
-                                            SwipeToDismissBoxValue.Settled -> Color.Transparent
-                                            else -> MaterialTheme.colorScheme.errorContainer
-                                        },
-                                        label = "swipe-bg"
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(color)
-                                            .padding(horizontal = 20.dp),
-                                        contentAlignment = Alignment.CenterEnd
-                                    ) {
-                                        Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
                                     }
                                 }
-                            ) {
-                                BookmarkItem(
-                                    entry = entry,
-                                    onClick = { entry.url?.let { url -> onNavigate(url) } },
-                                    onLongClick = { contextMenuEntry = entry }
-                                )
                             }
+                        )
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            backgroundContent = { SwipeDeleteBackground(dismissState.targetValue) }
+                        ) {
+                            BookmarkItem(
+                                entry = entry,
+                                onClick = {
+                                    if (entry.isFolder) viewModel.navigateToFolder(entry)
+                                    else entry.url?.let { url -> onNavigate(url) }
+                                },
+                                onLongClick = { contextMenuEntry = entry }
+                            )
                         }
                     }
                 }
@@ -284,21 +222,7 @@ fun BookmarksScreen(
                         Text(stringResource(R.string.move_to), modifier = Modifier.fillMaxWidth())
                     }
                     TextButton(onClick = {
-                        if (entry.isFolder) {
-                            deletingFolder = entry
-                        } else {
-                            viewModel.deleteEntry(entry)
-                            scope.launch {
-                                val result = snackbarHostState.showSnackbar(
-                                    message = deletedLabel,
-                                    actionLabel = undoLabel,
-                                    duration = SnackbarDuration.Short
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    viewModel.undoDelete(entry)
-                                }
-                            }
-                        }
+                        if (entry.isFolder) deletingFolder = entry else deleteWithUndo(entry)
                         contextMenuEntry = null
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
@@ -414,53 +338,15 @@ fun BookmarksScreen(
     // Move to folder dialog
     movingEntry?.let { entry ->
         val allFolders by viewModel.allFolders.collectAsStateWithLifecycle()
-        AlertDialog(
-            onDismissRequest = { movingEntry = null },
-            title = { Text(stringResource(R.string.move_to)) },
-            text = {
-                LazyColumn {
-                    item {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.moveEntry(entry.id, null)
-                                    movingEntry = null
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(stringResource(R.string.root_folder))
-                        }
-                    }
-                    items(
-                        allFolders.filter { it.id != entry.id && it.id !in allFolders.descendantsOf(entry.id) },
-                        key = { it.id }
-                    ) { folder ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.moveEntry(entry.id, folder.id)
-                                    movingEntry = null
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(folder.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                }
+        MoveToFolderDialog(
+            folders = allFolders.filter {
+                it.id != entry.id && it.id !in allFolders.descendantsOf(entry.id)
             },
-            confirmButton = {
-                TextButton(onClick = { movingEntry = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onPick = { folderId ->
+                viewModel.moveEntry(entry.id, folderId)
+                movingEntry = null
+            },
+            onDismiss = { movingEntry = null }
         )
     }
 }
@@ -507,40 +393,14 @@ private fun BookmarkItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = FolderIcon,
+                    painter = painterResource(R.drawable.ic_folder),
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         } else {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-                contentAlignment = Alignment.Center
-            ) {
-                val bitmap = remember(entry.favicon) {
-                    entry.favicon?.let { bytes ->
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    }
-                }
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = BookmarkIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            FaviconBadge(entry.favicon, painterResource(R.drawable.ic_bookmark_border))
         }
 
         Spacer(Modifier.width(12.dp))

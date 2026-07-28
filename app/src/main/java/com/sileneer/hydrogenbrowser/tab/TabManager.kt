@@ -44,9 +44,4 @@ class TabManager {
     }
 
     fun indexOfId(tabId: Int): Int = _tabs.indexOfFirst { it.id == tabId }
-
-    fun updateActiveTab(url: String, title: String) {
-        activeTab.url = url
-        activeTab.title = title
-    }
 }

@@ -3,9 +3,9 @@ package com.sileneer.hydrogenbrowser.ui.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -74,11 +74,8 @@ fun HydrogenNavGraph() {
         }
         composable(Routes.HISTORY) {
             val historyViewModel: HistoryViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return HistoryViewModel(browserViewModel.getHistoryRepository()) as T
-                    }
+                factory = viewModelFactory {
+                    initializer { HistoryViewModel(browserViewModel.getHistoryRepository()) }
                 }
             )
             HistoryScreen(
@@ -92,11 +89,8 @@ fun HydrogenNavGraph() {
         }
         composable(Routes.BOOKMARKS) {
             val bookmarkViewModel: BookmarkViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return BookmarkViewModel(browserViewModel.getBookmarkRepository()) as T
-                    }
+                factory = viewModelFactory {
+                    initializer { BookmarkViewModel(browserViewModel.getBookmarkRepository()) }
                 }
             )
             BookmarksScreen(

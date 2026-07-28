@@ -5,12 +5,3 @@
 # Preserve line numbers for debugging stack traces
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
-
-# WebView JavaScript interfaces (if any are added in the future)
--keepclassmembers class * {
-    @android.webkit.JavascriptInterface <methods>;
-}
-
-# Room
--keep class * extends androidx.room.RoomDatabase
--dontwarn androidx.room.paging.**

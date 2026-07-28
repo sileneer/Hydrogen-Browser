@@ -1,6 +1,5 @@
 package com.sileneer.hydrogenbrowser.common
 
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -18,12 +17,6 @@ class SearchEngineTest {
     fun `fromIndex returns GOOGLE for invalid index`() {
         assertEquals(SearchEngine.GOOGLE, SearchEngine.fromIndex(99))
         assertEquals(SearchEngine.GOOGLE, SearchEngine.fromIndex(-1))
-    }
-
-    @Test
-    fun `displayNames returns all engine names`() {
-        val expected = arrayOf("Google", "Baidu", "Bing", "DuckDuckGo")
-        assertArrayEquals(expected, SearchEngine.displayNames)
     }
 
     @Test

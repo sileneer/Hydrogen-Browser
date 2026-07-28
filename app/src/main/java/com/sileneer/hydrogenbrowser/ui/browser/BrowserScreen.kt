@@ -57,8 +57,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.SnackbarDuration
@@ -92,6 +90,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -107,6 +106,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sileneer.hydrogenbrowser.R
 import com.sileneer.hydrogenbrowser.common.UrlUtils
+import com.sileneer.hydrogenbrowser.ui.common.MoveToFolderDialog
 import kotlinx.coroutines.launch
 import androidx.core.view.isEmpty
 
@@ -367,50 +367,13 @@ fun BrowserScreen(
     // Move bookmark to folder dialog
     movingBookmarkId?.let { bookmarkId ->
         val allFolders by viewModel.allFolders.collectAsStateWithLifecycle()
-        AlertDialog(
-            onDismissRequest = { movingBookmarkId = null },
-            title = { Text(stringResource(R.string.move_to)) },
-            text = {
-                LazyColumn {
-                    item {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.moveBookmark(bookmarkId, null)
-                                    movingBookmarkId = null
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(stringResource(R.string.root_folder))
-                        }
-                    }
-                    items(allFolders, key = { it.id }) { folder ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.moveBookmark(bookmarkId, folder.id)
-                                    movingBookmarkId = null
-                                }
-                                .padding(vertical = 12.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(FolderIcon, contentDescription = null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(folder.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                }
+        MoveToFolderDialog(
+            folders = allFolders,
+            onPick = { folderId ->
+                viewModel.moveBookmark(bookmarkId, folderId)
+                movingBookmarkId = null
             },
-            confirmButton = {
-                TextButton(onClick = { movingBookmarkId = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { movingBookmarkId = null }
         )
     }
 
@@ -670,7 +633,10 @@ private fun BottomBar(
                             }
                             IconButton(onClick = { onMoreMenuToggle(false); onToggleBookmark() }) {
                                 Icon(
-                                    if (isBookmarked) BookmarkFilledIcon else BookmarkIcon,
+                                    painter = painterResource(
+                                        if (isBookmarked) R.drawable.ic_bookmark_filled
+                                        else R.drawable.ic_bookmark_border
+                                    ),
                                     contentDescription = stringResource(
                                         if (isBookmarked) R.string.remove_bookmark else R.string.bookmark_this_page
                                     ),
@@ -681,17 +647,17 @@ private fun BottomBar(
                         HorizontalDivider()
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.bookmarks)) },
-                            leadingIcon = { Icon(BookmarkIcon, contentDescription = null) },
+                            leadingIcon = { Icon(painterResource(R.drawable.ic_bookmark_border), contentDescription = null) },
                             onClick = { onMoreMenuToggle(false); onNavigateToBookmarks() }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.find_in_page)) },
-                            leadingIcon = { Icon(FindInPageIcon, contentDescription = null) },
+                            leadingIcon = { Icon(painterResource(R.drawable.ic_find_in_page), contentDescription = null) },
                             onClick = { onMoreMenuToggle(false); onFindInPage() }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.history)) },
-                            leadingIcon = { Icon(HistoryIcon, contentDescription = null) },
+                            leadingIcon = { Icon(painterResource(R.drawable.ic_history), contentDescription = null) },
                             onClick = { onMoreMenuToggle(false); onNavigateToHistory() }
                         )
                         DropdownMenuItem(
@@ -845,8 +811,6 @@ private fun AddressBarOverlay(
     onNavigate: (String) -> Unit,
     onEditUrl: () -> Unit
 ) {
-    val context = LocalContext.current
-
     LaunchedEffect(Unit) {
         overlayFocusRequester.requestFocus()
     }
@@ -1019,7 +983,7 @@ private fun PageInfoCard(
                 },
                 modifier = Modifier.size(36.dp)
             ) {
-                Icon(ContentCopyIcon, contentDescription = stringResource(R.string.copy_link), modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(painterResource(R.drawable.ic_content_copy), contentDescription = stringResource(R.string.copy_link), modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             // Edit

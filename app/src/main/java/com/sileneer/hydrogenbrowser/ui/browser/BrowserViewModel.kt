@@ -151,7 +151,7 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun createWebViewForTab(tabId: Int, initialUrl: String? = null): WebView {
+    private fun createWebViewForTab(tabId: Int): WebView {
         val vm = this
         return WebView(getApplication<Application>()).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -254,10 +254,6 @@ class BrowserViewModel(application: Application) : AndroidViewModel(application)
                         }
                     }
                 }
-            }
-
-            if (initialUrl != null) {
-                loadUrl(initialUrl)
             }
         }.also {
             webViews[tabId] = it

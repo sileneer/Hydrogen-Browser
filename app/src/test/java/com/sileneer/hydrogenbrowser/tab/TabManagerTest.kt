@@ -78,17 +78,10 @@ class TabManagerTest {
     }
 
     @Test
-    fun `updateActiveTab saves url and title`() {
-        tabManager.updateActiveTab("https://example.com", "Example")
-        assertEquals("https://example.com", tabManager.activeTab.url)
-        assertEquals("Example", tabManager.activeTab.title)
-    }
-
-    @Test
     fun `tabs are independent`() {
-        tabManager.updateActiveTab("https://first.com", "First")
+        tabManager.activeTab.url = "https://first.com"
         tabManager.addTab()
-        tabManager.updateActiveTab("https://second.com", "Second")
+        tabManager.activeTab.url = "https://second.com"
 
         tabManager.switchTo(0)
         assertEquals("https://first.com", tabManager.activeTab.url)
